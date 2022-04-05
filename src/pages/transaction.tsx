@@ -1,20 +1,20 @@
 import type { NextPage } from "next";
 import Head from "next/head";
-import { BasicsView } from "../views";
+import { SendKinView } from "../views";
 
-const Basics: NextPage = (props) => {
+const SendKin: NextPage = (props) => {
   return (
     <div>
       <Head>
-        <title>Solana Scaffold</title>
+        <title>Kin DApp Demo</title>
         <meta
           name="description"
           content="Basic Functionality"
         />
       </Head>
-      <BasicsView />
+      <SendKinView />
     </div>
   );
 };
 
-export default Basics;
+export default SendKin;

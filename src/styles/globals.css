@@ -24,3 +24,13 @@ a {
   background-color: #707070;
 }
 
+.Logo {
+  width: 60px;
+  height: 25px;
+}
+.LogoFooter {
+  width: 80px;
+  height: 40px;
+  margin-bottom: 10px;
+}
+

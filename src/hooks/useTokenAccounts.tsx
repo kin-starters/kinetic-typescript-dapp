@@ -1,40 +1,32 @@
-import { useState, useEffect} from 'react'
+import { useState, useEffect } from 'react'
 import { PublicKey, Connection } from '@solana/web3.js';
+import { KIN_MINT_DEVNET } from '../constants';
 
 
-const KIN_MINT_MAINNET = 'kinXdEcpDQeHPEuQnqmUgtYykqKGVFq6CeVX5iAHJq6'
-const KIN_MINT_DEVNET = 'KinDesK3dYWo3R2wDk6Ucaf31tvQCCSYyL8Fuqp33GX'
-// const KIN_MINT_DEVNET = 'KinD3xAzuqX3LJbxUG13peGnqjpV5dRcHV8tsdsrbeZ'
+
 
 interface UseTokenAccounts {
   publicKey: PublicKey,
   connection: Connection,
 }
-export default function useTokenAccounts({publicKey, connection}: UseTokenAccounts): PublicKey[] {
-  console.log("🚀 ~ publicKey", publicKey)
+export default function useTokenAccounts({ publicKey, connection }: UseTokenAccounts): PublicKey[] {
   const [tokenAccounts, setTokenAccounts] = useState<PublicKey[]>([])
 
   useEffect(() => {
 
-    async function getTokenAccounts(){
+    async function getTokenAccounts() {
       const mint = new PublicKey(KIN_MINT_DEVNET)
-      const {value} = await connection.getParsedTokenAccountsByOwner(
-      publicKey,
-      { mint }
-    );
-      console.log("🚀 ~ value", value)
-
-      if(value.length) setTokenAccounts(value.map(account => account.pubkey))
-
-    
+      const { value } = await connection.getParsedTokenAccountsByOwner(
+        publicKey,
+        { mint }
+      );
+      if (value.length) setTokenAccounts(value.map(account => account.pubkey))
     }
-    if(publicKey){
-      
-
-    getTokenAccounts()
+    if (publicKey) {
+      getTokenAccounts()
     }
-      
+
   }, [publicKey])
-  
+
   return tokenAccounts
 }

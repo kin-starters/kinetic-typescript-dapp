@@ -25,25 +25,17 @@ export const HomeView: FC = ({ }) => {
   const balance = useUserSOLBalanceStore((s) => s.balance)
   const { getUserSOLBalance } = useUserSOLBalanceStore()
 
-  const kinTokenAccounts = useTokenAccounts({publicKey: wallet.publicKey, connection})
-    console.log("🚀 ~ kinTokenAccounts", kinTokenAccounts)
+  const kinTokenAccounts = useTokenAccounts({ publicKey: wallet.publicKey, connection })
 
-    console.log(JSON.stringify({
-      account: wallet?.publicKey?.toBase58(),
-      amount: 1000
-    }))
-  
   const balanceKIN = useUserKINBalanceStore((s) => s.balance)
   const { getUserKINBalance } = useUserKINBalanceStore()
-  console.log("🚀 ~ balanceKIN", balanceKIN)
 
   useEffect(() => {
     if (wallet.publicKey) {
-      console.log(wallet.publicKey.toBase58())
       getUserSOLBalance(wallet.publicKey, connection)
     }
   }, [wallet.publicKey, connection, getUserSOLBalance])
-  
+
   useEffect(() => {
     if (kinTokenAccounts) {
       getUserKINBalance(kinTokenAccounts, connection)
@@ -65,8 +57,8 @@ export const HomeView: FC = ({ }) => {
           <pre data-prefix=">">
             <code className="truncate">Start building with Kin on Solana  </code>
           </pre>
-        </div>        
-          <div className="text-center">
+        </div>
+        <div className="text-center">
           <RequestAirdrop />
           {wallet && <p>SOL Balance: {(balance || 0).toLocaleString()}</p>}
           <RequestAirdropKin />

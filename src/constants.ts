@@ -1,0 +1,2 @@
+export const KIN_MINT_MAINNET = 'kinXdEcpDQeHPEuQnqmUgtYykqKGVFq6CeVX5iAHJq6'
+export const KIN_MINT_DEVNET = 'KinDesK3dYWo3R2wDk6Ucaf31tvQCCSYyL8Fuqp33GX'

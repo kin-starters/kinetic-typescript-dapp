@@ -1,22 +1,18 @@
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
-import { LAMPORTS_PER_SOL, TransactionSignature } from '@solana/web3.js';
-import { FC, useCallback } from 'react';
+import { TransactionSignature } from '@solana/web3.js';
+import { FC, useCallback, useState } from 'react';
 import { notify } from "../utils/notifications";
 
 import useUserKINBalanceStore from '../stores/useUserKINBalanceStore';
 import useTokenAccounts from 'hooks/useTokenAccounts';
 
-
-
-
 export const RequestAirdropKin: FC = () => {
     const { connection } = useConnection();
     const { publicKey } = useWallet();
-     const kinTokenAccounts = useTokenAccounts({publicKey: publicKey, connection})
-    console.log("🚀 ~ kinTokenAccounts", kinTokenAccounts)
+    const [sending, setSending] = useState(false)
+    const kinTokenAccounts = useTokenAccounts({ publicKey: publicKey, connection })
 
     const { getUserKINBalance } = useUserKINBalanceStore();
-    
 
     const onClick = useCallback(async () => {
         if (!publicKey) {
@@ -28,7 +24,7 @@ export const RequestAirdropKin: FC = () => {
         let signature: TransactionSignature = '';
 
         try {
-            
+            setSending(true)
             const response = await fetch('https://devnet.mogami.kin.org/api/airdrop', {
                 method: 'POST',
                 headers: {
@@ -40,8 +36,6 @@ export const RequestAirdropKin: FC = () => {
                 })
             })
             const data = await response.json()
-            console.log("🚀 ~ data", data)
-
             signature = data.signature
 
             await connection.confirmTransaction(signature, 'confirmed');
@@ -52,6 +46,7 @@ export const RequestAirdropKin: FC = () => {
             notify({ type: 'error', message: `Airdrop failed!`, description: error?.message, txid: signature });
             console.log('error', `Airdrop failed! ${error?.message}`, signature);
         }
+        setSending(false)
     }, [publicKey, connection, getUserKINBalance]);
 
     return (
@@ -59,8 +54,9 @@ export const RequestAirdropKin: FC = () => {
             <button
                 className="px-8 m-2 btn animate-pulse bg-gradient-to-r from-[#9945FF] to-[#14F195] hover:from-pink-500 hover:to-yellow-500 ..."
                 onClick={onClick}
+                disabled={sending}
             >
-                <span>Airdrop 1000 Kin </span>
+                {sending ? <span>Airdropping...</span> : <span>Airdrop 1000 Kin </span>}
             </button>
         </div>
     );

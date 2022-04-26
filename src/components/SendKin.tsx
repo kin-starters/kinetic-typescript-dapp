@@ -7,23 +7,18 @@ import {
 } from '@kin-tools/kin-transaction';
 import { FC, useCallback, useState } from 'react';
 import { notify } from "../utils/notifications";
+import { KIN_MINT_DEVNET } from '../constants';
 
 export const SendKin: FC = () => {
     const { connection } = useConnection();
 
     const { publicKey, sendTransaction } = useWallet();
-    console.log("🚀 ~ publicKey", publicKey ? publicKey.toBase58() : 'No Public Key')
     const [appIndex, setAppIndex] = useState('')
-    console.log("🚀 ~ appIndex", appIndex)
     const [address, setAddress] = useState('')
-    console.log("🚀 ~ address", address)
     const [amount, setAmount] = useState('')
-    console.log("🚀 ~ address", address)
-    
+    const [sending, setSending] = useState(false)
+
     const onClick = useCallback(async () => {
-        console.log("🚀 ~ publicKey", publicKey.toBase58())
-        console.log("🚀 ~ address", address)
-        console.log("🚀 ~ appIndex", appIndex)
         if (!publicKey) {
             notify({ type: 'error', message: `Wallet not connected!` });
             console.log('error', `Send Transaction: Wallet not connected!`);
@@ -32,7 +27,7 @@ export const SendKin: FC = () => {
 
         let signature: TransactionSignature = '';
         try {
-            const mint = new PublicKey('KinDesK3dYWo3R2wDk6Ucaf31tvQCCSYyL8Fuqp33GX')
+            const mint = new PublicKey(KIN_MINT_DEVNET)
             // from tokenAccount ******************************************************
             const fromTokenAccounts = await connection.getParsedTokenAccountsByOwner(
                 publicKey,
@@ -78,18 +73,23 @@ export const SendKin: FC = () => {
                 ...instructionsWithKRE // Must be the first two instructions in order
             );
 
+            setSending(true)
             signature = await sendTransaction(transaction, connection);
 
             await connection.confirmTransaction(signature, 'confirmed');
+
+            console.log('success', `Transaction sent! ${signature}`);
             notify({ type: 'success', message: 'Transaction successful!', txid: signature });
         } catch (error: any) {
             notify({ type: 'error', message: `Transaction failed!`, description: error?.message, txid: signature });
             console.log('error', `Transaction failed! ${error?.message}`, signature);
             return;
         }
+
+        setSending(false)
     }, [publicKey, notify, sendTransaction, address, appIndex]);
 
-    const divStyle = {width: '600px', display: 'flex', justifyContent: 'space-between'}
+    const divStyle = { width: '600px', display: 'flex', justifyContent: 'space-between' }
     const inputStyle = { color: 'black', paddingLeft: '5px', width: '500px' }
 
     return (
@@ -97,8 +97,6 @@ export const SendKin: FC = () => {
             {publicKey ?
                 (<>
                     <div style={divStyle}><span>Address: </span><input style={inputStyle} type="text" value={address} onChange={(event) => {
-
-                        console.log("🚀 ~ event", event.target.value)
                         setAddress(event.target.value)
                     }} /></div>
                     <br />
@@ -109,14 +107,14 @@ export const SendKin: FC = () => {
                 </>) : null}
             <button
                 className="group w-60 m-2 btn animate-pulse disabled:animate-none bg-gradient-to-r from-[#9945FF] to-[#14F195] hover:from-pink-500 hover:to-yellow-500 ... "
-                onClick={onClick} disabled={!publicKey || !Number(amount) || !address}
+                onClick={onClick} disabled={sending || !publicKey || !Number(amount) || !address}
             >
                 {publicKey ? (<div className="hidden group-disabled:block">
                     Can't Send...
                 </div>) : (<div className="hidden group-disabled:block">
                     Not Connected
                 </div>)}
-                
+
                 <span className="block group-disabled:hidden" >
                     Send Kin
                 </span>

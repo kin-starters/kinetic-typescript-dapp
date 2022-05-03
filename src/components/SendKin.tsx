@@ -91,18 +91,25 @@ export const SendKin: FC = () => {
 
     const divStyle = { width: '600px', display: 'flex', justifyContent: 'space-between' }
     const inputStyle = { color: 'black', paddingLeft: '5px', width: '500px' }
+    const labelStyle = { width: '500px', display: 'flex', marginLeft: '100px' }
+    const linkStyle = { textDecoration: 'underline'}
 
     return (
         <div>
             {publicKey ?
                 (<>
-                    <div style={divStyle}><span>Address: </span><input style={inputStyle} type="text" value={address} onChange={(event) => {
+                    <div className='md:w-full text-center text-slate-300 my-2' style={divStyle}><span >Address: </span><input style={inputStyle} type="text" value={address} onChange={(event) => {
                         setAddress(event.target.value)
                     }} /></div>
+                    <p className='md:w-full text-center text-slate-300 my-2' style={labelStyle}>The wallet address you want to send your Kin to.</p>
+                    <p className='md:w-full text-center text-slate-300 my-2' style={labelStyle}>This address must have a Kin token account.</p>
                     <br />
-                    <div style={divStyle}><span>Kin Amount: </span><input style={inputStyle} type="number" value={amount} onChange={(event) => setAmount(event.target.value.toString())} /></div>
+                    <div className='md:w-full text-center text-slate-300 my-2' style={divStyle}><span>Kin Amount: </span><input style={inputStyle} type="number" value={amount} onChange={(event) => setAmount(event.target.value.toString())} /></div>
+                    <p className='md:w-full text-center text-slate-300 my-2' style={labelStyle}>The amount of Kin you want to send.</p>
                     <br />
-                    <div style={divStyle}><span>App Index: </span><input style={inputStyle} type="number" value={appIndex} onChange={(event) => setAppIndex(event.target.value.toString())} /></div>
+                    <div className='md:w-full text-center text-slate-300 my-2' style={divStyle}><span>App Index: </span><input style={inputStyle} type="number" value={appIndex} onChange={(event) => setAppIndex(event.target.value.toString())} /></div>
+                    <p className='md:w-full text-center text-slate-300 my-2' style={labelStyle}>The App Index of the that will be credited with this transaction.</p>
+                    <p className='md:w-full text-center text-slate-300 my-2' style={labelStyle}><a href='https://developer.kin.org/docs/the-kre-explained/' target="_blank" style={linkStyle}>The Kin Rewards Engine</a></p>
                     <br />
                 </>) : null}
             <button

@@ -58,7 +58,7 @@ export const HomeView: FC = ({ }) => {
             <code className="truncate">Start building with Kin on Solana  </code>
           </pre>
         </div>
-        <div className="text-center">
+        <div className="md:w-full text-center text-slate-300 my-2">
           <RequestAirdrop />
           {wallet && <p>SOL Balance: {(balance || 0).toLocaleString()}</p>}
           <RequestAirdropKin />

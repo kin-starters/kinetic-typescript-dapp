@@ -1,6 +1,6 @@
 import type { NextPage } from 'next';
 import Head from 'next/head';
-import { SendKinView } from '../views';
+import { AccountView } from '../views';
 
 const SendKin: NextPage = () => {
   return (
@@ -9,7 +9,7 @@ const SendKin: NextPage = () => {
         <title>Kin DApp Demo</title>
         <meta name="description" content="Basic Functionality" />
       </Head>
-      <SendKinView />
+      <AccountView />
     </div>
   );
 };

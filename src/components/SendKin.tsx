@@ -33,27 +33,22 @@ export const SendKin: FC = () => {
         publicKey,
         { mint }
       );
-      console.log('🚀 ~ fromTokenAccounts', fromTokenAccounts);
       // Here we are going to assume the first tokenAccount is the one we want
       // You could implement a check to make sure it has sufficient balance
       const fromTokenAccount = fromTokenAccounts?.value[0]?.pubkey;
       if (!fromTokenAccount) throw new Error('No From Token Account!');
-      console.log('🚀 ~ fromTokenAccount', fromTokenAccount.toBase58());
 
       // to tokenAccount ********************************************************
       const toPublicKey = new PublicKey(address);
-      console.log('🚀 ~ toPublicKey', toPublicKey);
       const toTokenAccounts = await connection.getParsedTokenAccountsByOwner(
         toPublicKey,
         { mint }
       );
-      console.log('🚀 ~ toTokenAccounts', toTokenAccounts);
 
       // Again, we are going to assume the first one is the one we want.
       // You could do a balance check and choose the one with the largest balance if necessary
       const toTokenAccount = toTokenAccounts?.value[0]?.pubkey;
       if (!toTokenAccount) throw new Error('No destination Token Account!');
-      console.log('🚀 ~ toTokenAccount', toTokenAccount.toBase58());
 
       // Transaction Instructions *********************************************
       // 1 - Memo Program Instruction containing appIndex and transaction type formatted to be picked up by the KRE
@@ -66,7 +61,6 @@ export const SendKin: FC = () => {
         toTokenAccount,
         amount,
       });
-      console.log('🚀 ~ instructionsWithKRE', instructionsWithKRE);
 
       // Transaction ************************************************************
       const transaction = new Transaction().add(
@@ -85,7 +79,6 @@ export const SendKin: FC = () => {
         txid: signature,
       });
     } catch (error: any) {
-      console.log('🚀 ~ error', error);
       error.message &&
         notify({
           type: 'error',

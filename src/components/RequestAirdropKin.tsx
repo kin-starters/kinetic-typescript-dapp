@@ -6,10 +6,9 @@ import { notify } from '../utils/notifications';
 import useUserKINBalanceStore from '../stores/useUserKINBalanceStore';
 import useTokenAccounts from 'hooks/useTokenAccounts';
 
-export const RequestAirdropKin = () => {
+export const RequestAirdropKin = ({ disabled }) => {
   const { connection } = useConnection();
   const { publicKey } = useWallet();
-  console.log('🚀 ~ publicKey', publicKey.toBase58());
   const [sending, setSending] = useState(false);
   const kinTokenAccounts = useTokenAccounts({
     publicKey: publicKey,
@@ -20,7 +19,7 @@ export const RequestAirdropKin = () => {
 
   useEffect(() => {
     getUserKINBalance(kinTokenAccounts, connection);
-  }, [publicKey?.toBase58()]);
+  }, [publicKey]);
 
   const onClick = useCallback(async () => {
     if (!publicKey) {
@@ -70,14 +69,14 @@ export const RequestAirdropKin = () => {
       console.log('error', `Airdrop failed! ${error?.message}`, signature);
     }
     setSending(false);
-  }, [publicKey, connection, getUserKINBalance]);
+  }, [publicKey, connection, getUserKINBalance, kinTokenAccounts]);
 
   return (
     <div>
       <button
         className="px-8 m-2 btn animate-pulse bg-gradient-to-r from-[#9945FF] to-[#14F195] hover:from-pink-500 hover:to-yellow-500 ..."
         onClick={onClick}
-        disabled={sending}
+        disabled={disabled || sending}
       >
         {sending ? <span>Airdropping...</span> : <span>Airdrop 1000 Kin </span>}
       </button>

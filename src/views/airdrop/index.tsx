@@ -18,14 +18,12 @@ import useTokenAccounts from 'hooks/useTokenAccounts';
 
 export const AirdropView: FC = () => {
   const wallet = useWallet();
-  console.log('🚀 ~ wallet', wallet?.publicKey?.toBase58());
   const { connection } = useConnection();
 
   const balanceSOL = useUserSOLBalanceStore((s) => s.balance);
   const { getUserSOLBalance } = useUserSOLBalanceStore();
 
   const balanceKIN = useUserKINBalanceStore((s) => s.balance);
-  console.log('🚀 ~ balanceKIN', balanceKIN);
 
   const { getUserKINBalance } = useUserKINBalanceStore();
 
@@ -33,7 +31,6 @@ export const AirdropView: FC = () => {
     publicKey: wallet.publicKey,
     connection,
   });
-  console.log('🚀 ~ kinTokenAccounts', kinTokenAccounts);
 
   useEffect(() => {
     if (wallet.publicKey) {
@@ -54,15 +51,21 @@ export const AirdropView: FC = () => {
         <div className="md:w-full text-center text-slate-300 my-2 fade-in">
           {wallet?.publicKey ? (
             <>
+              <hr />
+              <br />
+              <div>SOL</div>
               <RequestAirdrop />
               {wallet.wallet ? (
                 <p>SOL Balance: {(balanceSOL || 0).toLocaleString()}</p>
               ) : null}
-              {kinTokenAccounts.length ? (
-                <RequestAirdropKin />
-              ) : (
-                <CreateKinTokenAccount />
-              )}
+              <br />
+
+              <hr />
+              <br />
+              <div>KIN</div>
+              <CreateKinTokenAccount disabled={kinTokenAccounts?.length > 0} />
+              <RequestAirdropKin disabled={kinTokenAccounts?.length === 0} />
+
               {wallet.wallet && kinTokenAccounts.length ? (
                 <p>KIN Balance: {(balanceKIN || 0).toLocaleString()}</p>
               ) : null}

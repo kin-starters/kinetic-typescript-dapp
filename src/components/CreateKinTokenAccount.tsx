@@ -31,7 +31,6 @@ export async function handleGetKinBalances({
   connection,
   address,
 }: HandleGetKinBalances) {
-  console.log('🚀 ~ handleGetKinBalances', address);
   const mintPublicKey = new PublicKey(KIN_MINT_DEVNET);
   const publicKey = new PublicKey(address);
   const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
@@ -52,7 +51,6 @@ export async function handleGetKinBalances({
       };
     })
   );
-  console.log('🚀 ~ balances', balances);
 
   return balances;
 }
@@ -73,12 +71,10 @@ export async function handleCreateTokenAccount({
   from,
   to,
 }: HandleCreateTokenAccount) {
-  console.log('🚀 ~ handleCreateTokenAccount', to);
   const balances = await handleGetKinBalances({
     connection,
     address: to,
   });
-  console.log('🚀 ~ balances', balances);
 
   if (balances && balances.length > 0)
     throw new Error('Token Account already exists!');
@@ -112,19 +108,19 @@ export async function handleCreateTokenAccount({
 
 interface CreateKinTokenAccountProps {
   withInput?: boolean;
+  disabled?: boolean;
 }
 
 export const CreateKinTokenAccount = ({
   withInput = false,
+  disabled = false,
 }: CreateKinTokenAccountProps) => {
-  console.log('🚀 ~ withInput', withInput);
   const wallet = useWallet();
 
   const { connection } = useConnection();
   const { publicKey, sendTransaction } = useWallet();
   const [sending, setSending] = useState(false);
   const [address, setAddress] = useState('');
-  console.log('🚀 ~ address', address);
 
   const kinTokenAccounts = useTokenAccounts({
     publicKey: publicKey,
@@ -135,8 +131,6 @@ export const CreateKinTokenAccount = ({
 
   const onClick = async () => {
     let signature: TransactionSignature = '';
-
-    console.log('🚀 ~ onClick', address);
 
     try {
       setSending(true);
@@ -176,7 +170,7 @@ export const CreateKinTokenAccount = ({
     <button
       className="px-8 m-2 btn animate-pulse bg-gradient-to-r from-[#9945FF] to-[#14F195] hover:from-pink-500 hover:to-yellow-500 ..."
       onClick={onClick}
-      disabled={sending || (withInput && !address)}
+      disabled={disabled || sending || (withInput && !address)}
     >
       {sending ? (
         <span>Creating...</span>
@@ -192,30 +186,30 @@ export const CreateKinTokenAccount = ({
     <div className="md:w-full text-center text-slate-300 my-2">
       {wallet.publicKey ? (
         <>
-          {!withInput && kinTokenAccounts.length ? (
-            <span>
-              Your Kin Token Account: {kinTokenAccounts[0].toBase58()}
-            </span>
+          {withInput ? (
+            <>
+              <p style={{ display: 'flex', flexDirection: 'column' }}>
+                Create Kin Token Account for another user's wallet:
+                <input
+                  style={inputStyle}
+                  type="text"
+                  value={address}
+                  onChange={(event) => {
+                    setAddress(event.target.value);
+                  }}
+                  disabled={disabled}
+                />
+              </p>
+              {createButton}
+            </>
           ) : (
             <>
-              {withInput ? (
-                <p style={{ display: 'flex', flexDirection: 'column' }}>
-                  Create Kin Token Account for another user's wallet:
-                  <input
-                    style={inputStyle}
-                    type="text"
-                    value={address}
-                    onChange={(event) => {
-                      setAddress(event.target.value);
-                    }}
-                  />
-                </p>
-              ) : (
+              {!disabled ? (
                 <p>
                   Create Kin Token Account for your own wallet. You need to have
                   SOL to do this.
                 </p>
-              )}
+              ) : null}
               {createButton}
             </>
           )}

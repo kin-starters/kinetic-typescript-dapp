@@ -1,7 +1,6 @@
-
 # Kin DApp Demo
 
-The Kin DApp Demo is a lightweight starter app based on the [Solana DApp Scaffold](https://github.com/solana-labs/dapp-scaffold) that will get you up and running wiht SDK-less Kin as quickly as possible.
+The Kin DApp Demo is a lightweight starter app based on the [Solana DApp Scaffold](https://github.com/solana-labs/dapp-scaffold) that will get you up and running with SDK-less Kin as quickly as possible.
 
 ## Getting Started
 
@@ -28,6 +27,7 @@ yarn dev
 ```
 
 ## Features
+
 ```
 1) Easily connect to wallets such as Phantom, Solflare, etc
 2) Airdrop Solana and Kin to your connected wallet.

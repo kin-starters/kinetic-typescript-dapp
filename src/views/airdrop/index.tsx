@@ -1,46 +1,26 @@
 // Next, React
-import { FC, useEffect } from 'react';
+import { FC, useState } from 'react';
 
 // Wallet
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 
 // Components
-import { RequestAirdrop } from '../../components/RequestAirdrop';
-import { RequestAirdropKin } from '../../components/RequestAirdropKin';
-import { CreateKinTokenAccount } from '../../components/CreateKinTokenAccount';
-
-// Store
-import useUserSOLBalanceStore from '../../stores/useUserSOLBalanceStore';
+import { RequestAirdrop } from 'components/RequestAirdrop';
+import { CreateKinAccount } from 'components/CreateKinAccount';
+import { AccountInfo } from 'components/AccountInfo';
 
 // Kin
-import useUserKINBalanceStore from '../../stores/useUserKINBalanceStore';
-import useTokenAccounts from 'hooks/useTokenAccounts';
+import useMogamiClientStore from '../../stores/useMogamiClientStore';
+import useAccountsStore from '../../stores/useAccountsStore';
 
 export const AirdropView: FC = () => {
-  const wallet = useWallet();
-  const { connection } = useConnection();
-
-  const balanceSOL = useUserSOLBalanceStore((s) => s.balance);
-  const { getUserSOLBalance } = useUserSOLBalanceStore();
-
-  const balanceKIN = useUserKINBalanceStore((s) => s.balance);
-
-  const { getUserKINBalance } = useUserKINBalanceStore();
-
-  const kinTokenAccounts = useTokenAccounts({
-    publicKey: wallet.publicKey,
-    connection,
-  });
-
-  useEffect(() => {
-    if (wallet.publicKey) {
-      getUserSOLBalance(wallet.publicKey, connection);
-    }
-  }, [wallet.publicKey, connection, getUserSOLBalance]);
-
-  useEffect(() => {
-    getUserKINBalance(kinTokenAccounts, connection);
-  }, [kinTokenAccounts, getUserKINBalance, wallet.publicKey]);
+  const { mogami } = useMogamiClientStore();
+  const { accounts, balances } = useAccountsStore();
+  console.log('🚀 ~ accounts', accounts);
+  const [selectedAccount, setSelectedAccount] = useState(accounts[0] || null);
+  console.log('🚀 ~ mogami', mogami);
+  console.log('🚀 ~ accounts', accounts);
+  console.log('🚀 ~ selectedAccount', selectedAccount);
 
   return (
     <div className="md:hero mx-auto p-4">
@@ -49,29 +29,39 @@ export const AirdropView: FC = () => {
           Airdrop
         </h1>
         <div className="md:w-full text-center text-slate-300 my-2 fade-in">
-          {wallet?.publicKey ? (
+          {mogami ? (
             <>
-              <hr />
-              <br />
-              <div>SOL</div>
-              <RequestAirdrop />
-              {wallet.wallet ? (
-                <p>SOL Balance: {(balanceSOL || 0).toLocaleString()}</p>
-              ) : null}
-              <br />
+              {accounts.length > 0 ? (
+                <>
+                  <RequestAirdrop
+                    disabled={!selectedAccount}
+                    account={selectedAccount}
+                  />
 
-              <hr />
-              <br />
-              <div>KIN</div>
-              <CreateKinTokenAccount disabled={kinTokenAccounts?.length > 0} />
-              <RequestAirdropKin disabled={kinTokenAccounts?.length === 0} />
+                  <div className="accounts">
+                    {accounts.map((account) => {
+                      console.log('🚀 ~ account', account);
 
-              {wallet.wallet && kinTokenAccounts.length ? (
-                <p>KIN Balance: {(balanceKIN || 0).toLocaleString()}</p>
-              ) : null}
+                      return (
+                        <AccountInfo
+                          key={account.publicKey}
+                          publicKey={account.publicKey}
+                          balance={balances[account.publicKey]}
+                          select={() => setSelectedAccount(account)}
+                          selected={
+                            selectedAccount?.publicKey === account.publicKey
+                          }
+                        />
+                      );
+                    })}
+                  </div>
+                </>
+              ) : (
+                <CreateKinAccount />
+              )}
             </>
           ) : (
-            <span>Not connected to wallet</span>
+            <span>Not connected to Kin client...</span>
           )}
         </div>
       </div>

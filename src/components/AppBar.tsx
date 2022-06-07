@@ -4,11 +4,8 @@ import Link from 'next/link';
 import Logo from '../assets/svg/kin.svg';
 
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
-import { useAutoConnect } from '../contexts/AutoConnectProvider';
 
 export const AppBar: FC = (props) => {
-  const { autoConnect, setAutoConnect } = useAutoConnect();
-
   return (
     <div>
       {/* NavBar / Header */}
@@ -42,11 +39,11 @@ export const AppBar: FC = (props) => {
               <a className="btn btn-ghost btn-sm rounded-btn">Home</a>
             </Link>
 
+            <Link href="/account">
+              <a className="btn btn-ghost btn-sm rounded-btn">Create Account</a>
+            </Link>
             <Link href="/airdrop">
               <a className="btn btn-ghost btn-sm rounded-btn">Airdrop</a>
-            </Link>
-            <Link href="/account">
-              <a className="btn btn-ghost btn-sm rounded-btn">Token Account</a>
             </Link>
             <Link href="/transaction">
               <a className="btn btn-ghost btn-sm rounded-btn">Send Kin</a>
@@ -56,7 +53,7 @@ export const AppBar: FC = (props) => {
 
         {/* Wallet & Settings */}
         <div className="navbar-end">
-          <div className="dropdown">
+          {/* <div className="dropdown">
             <div tabIndex={0} className="btn btn-square btn-ghost text-right">
               <svg
                 className="w-6 h-6"
@@ -98,7 +95,7 @@ export const AppBar: FC = (props) => {
               </li>
             </ul>
           </div>
-          <WalletMultiButton className="btn btn-ghost mr-4" />
+          <WalletMultiButton className="btn btn-ghost mr-4" /> */}
         </div>
       </div>
       {props.children}

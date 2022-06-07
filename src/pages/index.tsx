@@ -6,8 +6,8 @@ const Home: NextPage = () => {
   return (
     <div>
       <Head>
-        <title>Kin DApp Demo</title>
-        <meta name="description" content="Kin DApp Demo" />
+        <title>Kin Mogami DApp Demo</title>
+        <meta name="description" content="Kin Mogami DApp Demo" />
       </Head>
       <HomeView />
     </div>

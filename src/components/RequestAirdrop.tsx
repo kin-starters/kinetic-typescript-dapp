@@ -1,17 +1,20 @@
-import { useConnection, useWallet } from '@solana/wallet-adapter-react';
-import { LAMPORTS_PER_SOL, TransactionSignature } from '@solana/web3.js';
-import { FC, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { notify } from '../utils/notifications';
-import useUserSOLBalanceStore from '../stores/useUserSOLBalanceStore';
 
-export const RequestAirdrop: FC = () => {
-  const { connection } = useConnection();
-  const { publicKey } = useWallet();
-  const { getUserSOLBalance } = useUserSOLBalanceStore();
+import useMogamiClientStore from '../stores/useMogamiClientStore';
+import useAccountsStore from '../stores/useAccountsStore';
+
+export const RequestAirdrop = ({ account, disabled }) => {
+  const { mogami } = useMogamiClientStore();
+  const { balances, updateBalance } = useAccountsStore();
+  console.log('🚀 ~ account', account);
+  console.log('🚀 ~ balances', balances);
+
+  const [sending, setSending] = useState(false);
 
   const onClick = useCallback(async () => {
-    if (!publicKey) {
-      console.log('error', 'Wallet not connected!');
+    if (!account.publicKey) {
+      console.log('error', 'Kin Client not connected!');
       notify({
         type: 'error',
         message: 'error',
@@ -20,36 +23,43 @@ export const RequestAirdrop: FC = () => {
       return;
     }
 
-    let signature: TransactionSignature = '';
-
     try {
-      signature = await connection.requestAirdrop(publicKey, LAMPORTS_PER_SOL);
-      await connection.confirmTransaction(signature, 'confirmed');
+      setSending(true);
+      const airdrop = await mogami.requestAirdrop(account.publicKey, '1000');
+      console.log('🚀 ~ airdrop', airdrop);
+
       notify({
         type: 'success',
-        message: 'SOL Airdrop successful!',
-        txid: signature,
+        message: 'KIN Airdrop successful!',
+        txid: airdrop.data.signature,
       });
-
-      getUserSOLBalance(publicKey, connection);
     } catch (error: any) {
       notify({
         type: 'error',
-        message: `SOL Airdrop failed!`,
+        message: `KIN Airdrop failed!`,
         description: error?.message,
-        txid: signature,
       });
-      console.log('error', `Airdrop failed! ${error?.message}`, signature);
+      console.log('error', `Airdrop failed! ${error?.message}`);
     }
-  }, [publicKey, connection, getUserSOLBalance]);
+    setSending(false);
+
+    try {
+      const balance = await mogami.balance(account.publicKey);
+      const balanceInKin = (Number(balance.value) / 100000).toString();
+      updateBalance(account, balanceInKin);
+    } catch (error) {
+      console.log('🚀 ~ error', error);
+    }
+  }, [account]);
 
   return (
     <div>
       <button
         className="px-8 m-2 btn animate-pulse bg-gradient-to-r from-[#9945FF] to-[#14F195] hover:from-pink-500 hover:to-yellow-500 ..."
         onClick={onClick}
+        disabled={disabled || sending}
       >
-        <span>Airdrop 1 Sol </span>
+        {sending ? <span>Airdropping...</span> : <span>Airdrop 1000 Kin </span>}
       </button>
     </div>
   );

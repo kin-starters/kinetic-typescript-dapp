@@ -20,13 +20,13 @@ export const ContentContainer: FC = (props) => {
             </Link>
           </li>
           <li>
+            <li>
+              <Link href="/account">
+                <a>Create Account</a>
+              </Link>
+            </li>
             <Link href="/airdrop">
               <a>Airdrop</a>
-            </Link>
-          </li>
-          <li>
-            <Link href="/account">
-              <a>Token Account</a>
             </Link>
           </li>
           <li>

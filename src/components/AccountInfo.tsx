@@ -6,6 +6,7 @@ interface AccountInfoProps {
   selected?: boolean;
   select?: () => void;
   disabled?: boolean;
+  disabledSelected?: boolean;
 }
 
 export const AccountInfo = ({
@@ -14,14 +15,18 @@ export const AccountInfo = ({
   selected,
   select,
   disabled,
+  disabledSelected,
 }: AccountInfoProps) => {
+  console.log('🚀 ~ disabledSelected', disabledSelected);
   console.log('🚀 ~ disabled', disabled);
   return (
     <div
       className={`my-4 py-3 px-5 ${
         selected
-          ? 'before:block before:absolute before:-inset-1 before:rounded before:bg-purple-500 relative'
-          : `before:block before:absolute before:-inset-1 before:rounded  relative ${
+          ? `before:block before:absolute before:-inset-1 before:rounded before:bg-pink-500 relative ${
+              disabledSelected ? 'opacity-60 pointer-events-none' : ''
+            }`
+          : `before:block before:absolute before:-inset-1 before:rounded before:border before:border-sky-500 relative ${
               disabled ? 'opacity-25 pointer-events-none' : ''
             }`
       } ${select ? 'cursor-pointer' : ''} `}

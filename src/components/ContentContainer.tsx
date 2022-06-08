@@ -34,6 +34,11 @@ export const ContentContainer: FC = (props) => {
               <a>Send Kin</a>
             </Link>
           </li>
+          <li>
+            <Link href="/history">
+              <a>History</a>
+            </Link>
+          </li>
         </ul>
       </div>
     </div>

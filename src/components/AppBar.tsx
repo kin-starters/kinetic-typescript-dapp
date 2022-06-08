@@ -40,7 +40,7 @@ export const AppBar: FC = (props) => {
             </Link>
 
             <Link href="/account">
-              <a className="btn btn-ghost btn-sm rounded-btn">Create Account</a>
+              <a className="btn btn-ghost btn-sm rounded-btn">Accounts</a>
             </Link>
             <Link href="/airdrop">
               <a className="btn btn-ghost btn-sm rounded-btn">Airdrop</a>

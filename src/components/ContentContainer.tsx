@@ -22,7 +22,7 @@ export const ContentContainer: FC = (props) => {
           <li>
             <li>
               <Link href="/account">
-                <a>Create Account</a>
+                <a>Accounts</a>
               </Link>
             </li>
             <Link href="/airdrop">

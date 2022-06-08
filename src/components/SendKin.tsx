@@ -1,82 +1,48 @@
-import { useConnection, useWallet } from '@solana/wallet-adapter-react';
-import { PublicKey, Transaction, TransactionSignature } from '@solana/web3.js';
-
-import {
-  generateKreTransactionInstructions,
-  TransactionType,
-} from '@kin-tools/kin-transaction';
 import { FC, useCallback, useState } from 'react';
+import { TransactionType } from '@kin-tools/kin-memo';
+import { Commitment } from '@mogami/solana';
+
+import useMogamiClientStore from '../stores/useMogamiClientStore';
+import useAccountsStore from '../stores/useAccountsStore';
+import { AccountInfo } from 'components/AccountInfo';
+
 import { notify } from '../utils/notifications';
-import { KIN_MINT_DEVNET } from '../constants';
 
 export const SendKin: FC = () => {
-  const { connection } = useConnection();
+  const { mogami } = useMogamiClientStore();
+  const { accounts, balances, updateBalance } = useAccountsStore();
+  const [selectedFromAccount, setSelectedFromAccount] = useState(
+    accounts[0] || null
+  );
+  const [selectedToAccount, setSelectedToAccount] = useState(
+    accounts[1] || null
+  );
 
-  const { publicKey, sendTransaction } = useWallet();
   const [appIndex, setAppIndex] = useState('');
   const [address, setAddress] = useState('');
   const [amount, setAmount] = useState('');
   const [sending, setSending] = useState(false);
 
   const onClick = useCallback(async () => {
-    if (!publicKey) {
-      notify({ type: 'error', message: `Wallet not connected!` });
-      console.log('error', `Send Transaction: Wallet not connected!`);
-      return;
+    if (!mogami) {
+      notify({ type: 'error', message: `Kin Client not connected!` });
+      console.log('error', `Send Transaction: Kin Client not connected!`);
     }
 
-    let signature: TransactionSignature = '';
     try {
-      const mint = new PublicKey(KIN_MINT_DEVNET);
-      // from tokenAccount ******************************************************
-      const fromTokenAccounts = await connection.getParsedTokenAccountsByOwner(
-        publicKey,
-        { mint }
-      );
-      // Here we are going to assume the first tokenAccount is the one we want
-      // You could implement a check to make sure it has sufficient balance
-      const fromTokenAccount = fromTokenAccounts?.value[0]?.pubkey;
-      if (!fromTokenAccount) throw new Error('No From Token Account!');
-
-      // to tokenAccount ********************************************************
-      const toPublicKey = new PublicKey(address);
-      const toTokenAccounts = await connection.getParsedTokenAccountsByOwner(
-        toPublicKey,
-        { mint }
-      );
-
-      // Again, we are going to assume the first one is the one we want.
-      // You could do a balance check and choose the one with the largest balance if necessary
-      const toTokenAccount = toTokenAccounts?.value[0]?.pubkey;
-      if (!toTokenAccount) throw new Error('No destination Token Account!');
-
-      // Transaction Instructions *********************************************
-      // 1 - Memo Program Instruction containing appIndex and transaction type formatted to be picked up by the KRE
-      // 2 - Token Program Instruction for transferring Kin
-      const instructionsWithKRE = await generateKreTransactionInstructions({
-        type: TransactionType.P2P,
-        appIndex: Number(appIndex),
-        from: publicKey,
-        fromTokenAccount,
-        toTokenAccount,
-        amount,
-      });
-
-      // Transaction ************************************************************
-      const transaction = new Transaction().add(
-        ...instructionsWithKRE // Must be the first two instructions in order
-      );
-
       setSending(true);
-      signature = await sendTransaction(transaction, connection);
-
-      await connection.confirmTransaction(signature, 'confirmed');
-
-      console.log('success', `Transaction sent! ${signature}`);
+      const transaction = await mogami.makeTransfer({
+        amount,
+        commitment: Commitment.Finalized,
+        destination: address || selectedToAccount.publicKey,
+        owner: selectedFromAccount,
+        type: TransactionType.P2P,
+      });
+      console.log('🚀 ~ transaction', transaction);
       notify({
         type: 'success',
         message: 'Transaction successful!',
-        txid: signature,
+        txid: transaction.signature,
       });
     } catch (error: any) {
       error.message &&
@@ -84,84 +50,176 @@ export const SendKin: FC = () => {
           type: 'error',
           message: `Transaction failed!`,
           description: error?.message,
-          txid: signature,
         });
-      console.log('error', `Transaction failed! ${error?.message}`, signature);
-      setSending(false);
-      return;
+      console.log('error', `Transaction failed! ${error?.message}`);
     }
 
     setSending(false);
-  }, [publicKey, notify, sendTransaction, address, appIndex]);
+
+    try {
+      const balanceFrom = await mogami.balance(selectedFromAccount.publicKey);
+      console.log('🚀 ~ balanceFrom', balanceFrom);
+      const balanceFromInKin = (Number(balanceFrom.value) / 100000).toString();
+      console.log('🚀 ~ balanceFromInKin', balanceFromInKin);
+      updateBalance(selectedFromAccount, balanceFromInKin);
+
+      if (selectedToAccount) {
+        const balanceTo = await mogami.balance(selectedToAccount.publicKey);
+        console.log('🚀 ~ balanceTo', balanceTo);
+        const balanceToInKin = (Number(balanceTo.value) / 100000).toString();
+        console.log('🚀 ~ balanceToInKin', balanceToInKin);
+        updateBalance(selectedToAccount, balanceToInKin);
+      }
+    } catch (error) {
+      console.log('🚀 ~ error', error);
+    }
+  }, [mogami, notify, address, appIndex]);
 
   const divStyle = {
     width: '600px',
     display: 'flex',
     justifyContent: 'space-between',
   };
-  const inputStyle = { color: 'black', paddingLeft: '5px', width: '500px' };
-  const labelStyle = { width: '500px', display: 'flex', marginLeft: '100px' };
+  const inputStyle = {
+    color: 'black',
+    paddingLeft: '5px',
+    width: '500px',
+  };
+  const labelStyle = { width: '600px', display: 'flex', marginLeft: '100px' };
   const linkStyle = { textDecoration: 'underline' };
 
   return (
     <div className="md:w-full text-center text-slate-300 my-2 fade-in">
-      {publicKey ? (
-        <>
+      {mogami ? (
+        <div style={{ position: 'relative' }}>
           <div style={divStyle}>
-            <span>Address: </span>
+            <span>From: </span>
+          </div>
+
+          <div className="accounts">
+            {accounts.map((account) => {
+              const selected =
+                selectedFromAccount?.publicKey === account.publicKey;
+
+              return (
+                <AccountInfo
+                  key={account.publicKey}
+                  publicKey={account.publicKey}
+                  balance={balances[account.publicKey]}
+                  select={() => {
+                    setSelectedFromAccount(selected ? null : account);
+                  }}
+                  selected={selected}
+                />
+              );
+            })}
+          </div>
+
+          <div style={divStyle}>
+            <span>To: </span>
+          </div>
+
+          <div className="accounts">
+            {accounts.map((account) => {
+              const selected =
+                selectedToAccount?.publicKey === account.publicKey;
+
+              const selectedFrom =
+                selectedFromAccount?.publicKey === account.publicKey;
+
+              if (selectedFrom && selected) {
+                setSelectedToAccount(null);
+              }
+
+              return (
+                <AccountInfo
+                  key={account.publicKey}
+                  publicKey={account.publicKey}
+                  balance={balances[account.publicKey]}
+                  select={() => {
+                    setSelectedToAccount(selected ? null : account);
+                  }}
+                  selected={selected}
+                  disabled={selectedFrom}
+                />
+              );
+            })}
+          </div>
+
+          <div
+            className={`my-4 py-4 px-5 ${
+              address && !selectedToAccount ? 'bg-pink-500 rounded' : ''
+            } `}
+          >
             <input
               style={inputStyle}
+              className="rounded"
               type="text"
               value={address}
               onChange={(event) => {
                 setAddress(event.target.value);
+                setSelectedToAccount(null);
               }}
             />
+
+            <a
+              href={
+                'https://explorer.solana.com/address/' +
+                address +
+                `?cluster=devnet`
+              }
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex link link-accent"
+              style={{ position: 'relative', width: '20px' }}
+            >
+              <svg
+                className="flex-shrink-0 h-4 ml-2 text-primary-light w-4"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                style={{ position: 'absolute', top: '-14' }}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                ></path>
+              </svg>
+            </a>
           </div>
-          <p
-            className="md:w-full text-center text-slate-300 my-2"
-            style={labelStyle}
-          >
-            The wallet address you want to send your Kin to.
-          </p>
-          <p
-            className="md:w-full text-center text-slate-300 my-2"
-            style={labelStyle}
-          >
-            This address must have a Kin token account.
-          </p>
+
           <br />
-          <div
-            className="md:w-full text-center text-slate-300 my-2"
-            style={divStyle}
-          >
-            <span>Kin Amount: </span>
-            <input
-              style={inputStyle}
-              type="number"
-              value={amount}
-              onChange={(event) => setAmount(event.target.value.toString())}
-            />
+          <br />
+
+          <div style={divStyle}>
+            <span>Amount: </span>
           </div>
-          <p
-            className="md:w-full text-center text-slate-300 my-2"
-            style={labelStyle}
-          >
-            The amount of Kin you want to send.
-          </p>
           <br />
-          <div
-            className="md:w-full text-center text-slate-300 my-2"
-            style={divStyle}
-          >
+
+          <input
+            style={inputStyle}
+            type="number"
+            value={amount}
+            onChange={(event) => setAmount(event.target.value.toString())}
+          />
+
+          <br />
+          <br />
+          <div style={divStyle}>
             <span>App Index: </span>
-            <input
-              style={inputStyle}
-              type="number"
-              value={appIndex}
-              onChange={(event) => setAppIndex(event.target.value.toString())}
-            />
           </div>
+          <br />
+
+          <input
+            style={inputStyle}
+            type="number"
+            value={appIndex}
+            onChange={(event) => setAppIndex(event.target.value.toString())}
+          />
+
           <p
             className="md:w-full text-center text-slate-300 my-2"
             style={labelStyle}
@@ -181,12 +239,19 @@ export const SendKin: FC = () => {
             </a>
           </p>
           <br />
+          <br />
           <button
             className="group w-60 m-2 btn animate-pulse disabled:animate-none bg-gradient-to-r from-[#9945FF] to-[#14F195] hover:from-pink-500 hover:to-yellow-500 ... "
             onClick={onClick}
-            disabled={sending || !publicKey || !Number(amount) || !address}
+            disabled={
+              sending ||
+              !mogami ||
+              !Number(amount) ||
+              !selectedFromAccount ||
+              (!selectedToAccount && !address)
+            }
           >
-            {publicKey ? (
+            {mogami ? (
               <div className="hidden group-disabled:block">Can't Send...</div>
             ) : (
               <div className="hidden group-disabled:block">Not Connected</div>
@@ -194,7 +259,7 @@ export const SendKin: FC = () => {
 
             <span className="block group-disabled:hidden">Send Kin</span>
           </button>
-        </>
+        </div>
       ) : (
         <span>Not connected to wallet</span>
       )}

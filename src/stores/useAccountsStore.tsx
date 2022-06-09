@@ -29,7 +29,9 @@ const useAccountsStore = create<KinAccountsStore>((set, _get) => ({
   updateBalance: (account: Keypair, balance: string) => {
     set((s) => {
       const updatedBalances = { ...s.balances };
-      updatedBalances[account.publicKey] = balance;
+      if (updatedBalances[account.publicKey]) {
+        updatedBalances[account.publicKey] = balance;
+      }
       s.balances = updatedBalances;
     });
   },

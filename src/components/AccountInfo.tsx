@@ -80,7 +80,7 @@ export const AccountInfo = ({
         </span>
       ) : null}
       {mnemonic ? (
-        <p style={{ width: '80%', margin: '10px auto auto' }}>{mnemonic}</p>
+        <p style={{ width: '65%', margin: '10px auto auto' }}>{mnemonic}</p>
       ) : null}
     </div>
   );

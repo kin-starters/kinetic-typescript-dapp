@@ -1,4 +1,4 @@
-import { FC, useCallback, useState } from 'react';
+import { FC, useState } from 'react';
 import { TransactionType } from '@kin-tools/kin-memo';
 import { Commitment } from '@mogami/solana';
 
@@ -24,19 +24,16 @@ export const SendKin: FC = () => {
   const [amount, setAmount] = useState('');
   const [sending, setSending] = useState(false);
 
-  const [isBatch, setIsBatch] = useState(false);
   const [batch, setBatch] = useState([]);
 
   const addToBatch = () => {
-    setIsBatch(true);
     setBatch([
       ...batch,
       { amount, destination: selectedToAccount.publicKey || address },
     ]);
   };
 
-  const completeBatchPayment = useCallback(async () => {
-    console.log('🚀 ~ completeBatchPayment', selectedFromAccount, batch);
+  const completeBatchPayment = async () => {
     if (!mogami) {
       notify({ type: 'error', message: `Kin Client not connected!` });
       console.log('error', `Send Transaction: Kin Client not connected!`);
@@ -44,13 +41,17 @@ export const SendKin: FC = () => {
 
     try {
       setSending(true);
+      notify({
+        type: 'info',
+        message: 'Transaction on its way!',
+      });
       const transaction = await mogami.makeTransferBatch({
         commitment: Commitment.Finalized,
         owner: selectedFromAccount,
         type: TransactionType.P2P,
         payments: batch,
       });
-      console.log('🚀 ~ transaction', transaction);
+      setBatch([]);
       notify({
         type: 'success',
         message: 'Transaction successful!',
@@ -70,23 +71,38 @@ export const SendKin: FC = () => {
 
     try {
       const balanceFrom = await mogami.balance(selectedFromAccount.publicKey);
-      console.log('🚀 ~ balanceFrom', balanceFrom);
       const balanceFromInKin = (Number(balanceFrom.value) / 100000).toString();
-      console.log('🚀 ~ balanceFromInKin', balanceFromInKin);
       updateBalance(selectedFromAccount, balanceFromInKin);
 
-      batch.forEach(async (send) => {
-        const balance = await mogami.balance(send.destination);
-        const balanceToInKin = (Number(balance.value) / 100000).toString();
-        console.log('🚀 ~ balanceToInKin', balanceToInKin);
-        updateBalance(selectedToAccount, balanceToInKin);
+      const promises = batch.map((send) => {
+        return async () => {
+          const balance = await mogami.balance(send.destination);
+          const balanceInKin = (Number(balance.value) / 100000).toString();
+          const account = accounts.find(
+            (acc) => acc.publicKey === send.destination
+          );
+          if (account) {
+            updateBalance(account, balanceInKin);
+          }
+        };
       });
+
+      let promiseExecution = async () => {
+        for (let promise of promises) {
+          try {
+            await promise();
+          } catch (error) {
+            console.log(error.message);
+          }
+        }
+      };
+      promiseExecution();
     } catch (error) {
       console.log('🚀 ~ error', error);
     }
-  }, [mogami, notify, address, appIndex]);
+  };
 
-  const completePayment = useCallback(async () => {
+  const completePayment = async () => {
     if (!mogami) {
       notify({ type: 'error', message: `Kin Client not connected!` });
       console.log('error', `Send Transaction: Kin Client not connected!`);
@@ -94,6 +110,10 @@ export const SendKin: FC = () => {
 
     try {
       setSending(true);
+      notify({
+        type: 'info',
+        message: 'Transaction on its way!',
+      });
       const transaction = await mogami.makeTransfer({
         amount,
         commitment: Commitment.Finalized,
@@ -125,29 +145,32 @@ export const SendKin: FC = () => {
 
       if (selectedToAccount) {
         const balanceTo = await mogami.balance(selectedToAccount.publicKey);
-        const balanceToInKin = (Number(balanceTo.value) / 100000).toString();
-        updateBalance(selectedToAccount, balanceToInKin);
+        const balanceInKin = (Number(balanceTo.value) / 100000).toString();
+        updateBalance(selectedToAccount, balanceInKin);
       }
     } catch (error) {
       console.log('🚀 ~ error', error);
     }
-  }, [mogami, notify, address, appIndex]);
+  };
 
   const divStyle = {
-    width: '608px',
+    width: '700px',
     display: 'flex',
     justifyContent: 'space-between',
   };
   const inputStyle = {
     color: 'black',
     paddingLeft: '5px',
-    width: '500px',
+    width: '550px',
   };
-  const labelStyle = { width: '600px', display: 'flex', marginLeft: '100px' };
+  const labelStyle = { width: '700px', display: 'flex', marginLeft: '150px' };
   const linkStyle = { textDecoration: 'underline' };
 
   return (
-    <div className="md:w-full text-center text-slate-300 my-2 fade-in">
+    <div
+      className="md:w-full text-center text-slate-300 my-2 fade-in"
+      style={{ width: '700px' }}
+    >
       {(() => {
         if (!mogami) {
           return <span>Not connected to Kin Client</span>;
@@ -166,24 +189,25 @@ export const SendKin: FC = () => {
 
               <div
                 className="accounts"
-                style={{ width: '608px', margin: 'auto' }}
+                style={{ width: '700px', margin: 'auto' }}
               >
                 {accounts.map((account) => {
                   const selected =
                     selectedFromAccount?.publicKey === account.publicKey;
 
                   return (
-                    <AccountInfo
-                      key={account.publicKey}
-                      publicKey={account.publicKey}
-                      balance={balances[account.publicKey]}
-                      select={() => {
-                        setSelectedFromAccount(selected ? null : account);
-                      }}
-                      disabled={isBatch}
-                      selected={selected}
-                      disabledSelected={selected && isBatch}
-                    />
+                    <div key={account.publicKey}>
+                      <AccountInfo
+                        publicKey={account.publicKey}
+                        balance={balances[account.publicKey]}
+                        select={() => {
+                          setSelectedFromAccount(selected ? null : account);
+                        }}
+                        disabled={!!batch.length}
+                        selected={selected}
+                        disabledSelected={selected && !!batch.length}
+                      />
+                    </div>
                   );
                 })}
               </div>
@@ -194,7 +218,7 @@ export const SendKin: FC = () => {
 
               <div
                 className="accounts"
-                style={{ width: '600px', margin: 'auto' }}
+                style={{ width: '700px', margin: 'auto' }}
               >
                 {accounts.map((account) => {
                   const selected =
@@ -208,30 +232,32 @@ export const SendKin: FC = () => {
                   }
 
                   return (
-                    <AccountInfo
-                      key={account.publicKey}
-                      publicKey={account.publicKey}
-                      balance={balances[account.publicKey]}
-                      select={() => {
-                        setSelectedToAccount(selected ? null : account);
-                      }}
-                      selected={selected}
-                      disabled={selectedFrom}
-                    />
+                    <div key={account.publicKey}>
+                      <AccountInfo
+                        key={account.publicKey}
+                        publicKey={account.publicKey}
+                        balance={balances[account.publicKey]}
+                        select={() => {
+                          setSelectedToAccount(selected ? null : account);
+                        }}
+                        selected={selected}
+                        disabled={selectedFrom}
+                      />
+                    </div>
                   );
                 })}
               </div>
 
               <div
-                className={`my-4 py-4 px-5 ${
+                className={`my-4 py-3 px-5 ${
                   address && !selectedToAccount
                     ? 'bg-pink-500 rounded'
                     : 'border border-sky-500 rounded'
                 } `}
-                style={{ margin: 'auto', width: '608px' }}
+                style={{ margin: 'auto', width: '700px' }}
               >
                 <input
-                  style={{ ...inputStyle, padding: 'auto 4px', width: '500px' }}
+                  style={{ ...inputStyle, padding: 'auto 4px', width: '600px' }}
                   className="rounded"
                   type="text"
                   value={address}
@@ -283,7 +309,6 @@ export const SendKin: FC = () => {
               </div>
 
               <br />
-              <br />
               <div style={divStyle}>
                 <span>App Index: </span>
                 <input
@@ -319,7 +344,7 @@ export const SendKin: FC = () => {
               <button
                 className="group w-60 m-2 btn animate-pulse disabled:animate-none bg-gradient-to-r from-[#9945FF] to-[#14F195] hover:from-pink-500 hover:to-yellow-500 ... "
                 onClick={
-                  isBatch
+                  !!batch.length
                     ? () => completeBatchPayment()
                     : () => completePayment()
                 }
@@ -332,15 +357,19 @@ export const SendKin: FC = () => {
                       (!selectedToAccount && !address)))
                 }
               >
-                {mogami ? (
-                  <div className="hidden group-disabled:block">
-                    Can't Send...
-                  </div>
-                ) : (
-                  <div className="hidden group-disabled:block">
-                    Not Connected
-                  </div>
-                )}
+                {sending ? (
+                  <div className="hidden group-disabled:block">Waiting...</div>
+                ) : null}
+
+                {(!sending && !appIndex) ||
+                (!batch.length &&
+                  (!Number(amount) ||
+                    !selectedFromAccount ||
+                    (!selectedToAccount && !address))) ? (
+                  <span className="hidden group-disabled:block">
+                    Can't Complete Payment
+                  </span>
+                ) : null}
 
                 {batch.length ? (
                   <span className="block group-disabled:hidden">
@@ -365,15 +394,18 @@ export const SendKin: FC = () => {
                   (!selectedToAccount && !address)
                 }
               >
-                {mogami ? (
-                  <div className="hidden group-disabled:block">
-                    Can't Add to Batch...
-                  </div>
-                ) : (
-                  <div className="hidden group-disabled:block">
-                    Not Connected
-                  </div>
-                )}
+                {sending ? (
+                  <div className="hidden group-disabled:block">Waiting...</div>
+                ) : null}
+
+                {(!sending && !appIndex) ||
+                !Number(amount) ||
+                !selectedFromAccount ||
+                (!selectedToAccount && !address) ? (
+                  <span className="hidden group-disabled:block">
+                    Can't Add to Batch
+                  </span>
+                ) : null}
 
                 <span className="block group-disabled:hidden">
                   Add to Batch

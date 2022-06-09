@@ -9,8 +9,8 @@ export const AccountView: FC = () => {
           Create Kin Account
         </h1>
 
-        <div className="text-center fade-in" style={{ width: '608px' }}>
-          <CreateKinAccount />
+        <div className="text-center fade-in" style={{ width: '700px' }}>
+          <CreateKinAccount withInput />
         </div>
       </div>
     </div>

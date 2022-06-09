@@ -31,7 +31,7 @@ export const AirdropView: FC = () => {
                     account={selectedAccount}
                   />
 
-                  <div className="accounts" style={{ width: '608px' }}>
+                  <div className="accounts" style={{ width: '700px' }}>
                     {accounts.map((account) => {
                       return (
                         <AccountInfo

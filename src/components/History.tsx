@@ -32,7 +32,7 @@ const AccountHistory = ({ account }) => {
       {history?.data.length || loading ? (
         <div
           style={{
-            width: '600px',
+            width: '700px',
             display: 'flex',
             flexDirection: 'column',
           }}
@@ -46,7 +46,7 @@ const AccountHistory = ({ account }) => {
                   {historyEvent.history.map((hstry) => {
                     return (
                       <div
-                        style={{ width: '608px' }}
+                        style={{ width: '700px' }}
                         className="p-5 my-5 text-left whitespace-pre-wrap break-words block absolute -inset-1 rounded border border-sky-500 relative"
                       >
                         <p>

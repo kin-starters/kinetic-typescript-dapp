@@ -13,7 +13,6 @@ require('../styles/globals.css');
 
 const App: FC<AppProps> = ({ Component, pageProps }) => {
   const { setupMogami, mogami } = useMogamiClientStore();
-  console.log('🚀 ~ mogami', mogami);
   const [settingUp, setSettingUp] = useState(false);
   if (!mogami && !settingUp) {
     setupMogami();

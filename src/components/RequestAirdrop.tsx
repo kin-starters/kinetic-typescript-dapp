@@ -7,8 +7,6 @@ import useAccountsStore from '../stores/useAccountsStore';
 export const RequestAirdrop = ({ account, disabled }) => {
   const { mogami } = useMogamiClientStore();
   const { balances, updateBalance } = useAccountsStore();
-  console.log('🚀 ~ account', account);
-  console.log('🚀 ~ balances', balances);
 
   const [sending, setSending] = useState(false);
 
@@ -26,7 +24,6 @@ export const RequestAirdrop = ({ account, disabled }) => {
     try {
       setSending(true);
       const airdrop = await mogami.requestAirdrop(account.publicKey, '1000');
-      console.log('🚀 ~ airdrop', airdrop);
 
       notify({
         type: 'success',

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 interface AccountInfoProps {
   publicKey: string;
@@ -7,6 +7,7 @@ interface AccountInfoProps {
   select?: () => void;
   disabled?: boolean;
   disabledSelected?: boolean;
+  getMnemonic?: (publicKey: string) => void;
 }
 
 export const AccountInfo = ({
@@ -16,17 +17,17 @@ export const AccountInfo = ({
   select,
   disabled,
   disabledSelected,
+  getMnemonic,
 }: AccountInfoProps) => {
-  console.log('🚀 ~ disabledSelected', disabledSelected);
-  console.log('🚀 ~ disabled', disabled);
+  const [mnemonic, setMnemonic] = useState(null);
   return (
     <div
       className={`my-4 py-3 px-5 ${
         selected
-          ? `before:block before:absolute before:-inset-1 before:rounded before:bg-pink-500 relative ${
+          ? `rounded bg-pink-500 relative ${
               disabledSelected ? 'opacity-60 pointer-events-none' : ''
             }`
-          : `before:block before:absolute before:-inset-1 before:rounded before:border before:border-sky-500 relative ${
+          : `rounded border border-sky-500 relative ${
               disabled ? 'opacity-25 pointer-events-none' : ''
             }`
       } ${select ? 'cursor-pointer' : ''} `}
@@ -64,6 +65,23 @@ export const AccountInfo = ({
           </svg>
         </a>
       </span>
+      {getMnemonic ? (
+        <span
+          onClick={() => {
+            if (mnemonic) {
+              setMnemonic(null);
+            } else {
+              setMnemonic(getMnemonic(publicKey));
+            }
+          }}
+          className="rounded bg-pink-500 px-2 py-1 ml-5 inline-flex cursor-pointer"
+        >
+          <span className="m-auto">Secret</span>
+        </span>
+      ) : null}
+      {mnemonic ? (
+        <p style={{ width: '80%', margin: '10px auto auto' }}>{mnemonic}</p>
+      ) : null}
     </div>
   );
 };

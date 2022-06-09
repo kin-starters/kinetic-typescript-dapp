@@ -15,8 +15,7 @@ export const CreateKinAccount = ({
   disabled = false,
 }: CreateKinAccountProps) => {
   const { mogami } = useMogamiClientStore();
-  const { accounts, addAccount, balances } = useAccountsStore();
-  console.log('🚀 ~ accounts', accounts);
+  const { accounts, addAccount, balances, getMnemonic } = useAccountsStore();
 
   const [sending, setSending] = useState(false);
   const [address, setAddress] = useState('');
@@ -26,12 +25,14 @@ export const CreateKinAccount = ({
 
     try {
       setSending(true);
-      const keypair = Keypair.generate();
+      const mnemonic = Keypair.generateMnemonic();
+      console.log('🚀 ~ mnemonic', mnemonic);
+      const keypair = Keypair.fromMnemonic(mnemonic);
       console.log('🚀 ~ keypair', keypair);
 
       account = await mogami.createAccount(keypair);
       console.log('🚀 ~ account', account);
-      addAccount(keypair);
+      addAccount(keypair, mnemonic);
 
       notify({
         type: 'success',
@@ -87,13 +88,12 @@ export const CreateKinAccount = ({
           {accounts.length ? (
             <div className="accounts">
               {accounts.map((account) => {
-                console.log('🚀 ~ account', account);
-
                 return (
                   <AccountInfo
                     key={account.publicKey}
                     publicKey={account.publicKey}
                     balance={balances[account.publicKey]}
+                    getMnemonic={getMnemonic}
                   />
                 );
               })}

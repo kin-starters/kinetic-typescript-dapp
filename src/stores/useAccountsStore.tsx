@@ -1,23 +1,27 @@
 import create, { State } from 'zustand';
 import { Keypair } from '@mogami/keypair';
 
-interface Balances {
+interface Hash {
   [key: string]: string;
 }
 
 interface KinAccountsStore extends State {
   accounts: Keypair[];
-  balances: Balances;
-  addAccount: (account: Keypair) => void;
-  updateBalance(account: Keypair, amount: string);
+  mnemonics: Hash;
+  balances: Hash;
+  addAccount: (account: Keypair, mnemonic: string) => void;
+  updateBalance: (account: Keypair, amount: string) => void;
+  getMnemonic: (publicKey: string) => string;
 }
 
 const useAccountsStore = create<KinAccountsStore>((set, _get) => ({
   accounts: [],
+  mnemonics: {},
   balances: {},
-  addAccount: (account: Keypair) => {
+  addAccount: (account: Keypair, mnemonic: string) => {
     set((s) => {
       s.accounts = [...s.accounts, account];
+      s.mnemonics[account.publicKey] = mnemonic;
       s.balances[account.publicKey] = '0';
       console.log(`Account added, `, account.publicKey);
     });
@@ -28,6 +32,10 @@ const useAccountsStore = create<KinAccountsStore>((set, _get) => ({
       updatedBalances[account.publicKey] = balance;
       s.balances = updatedBalances;
     });
+  },
+  getMnemonic: (publicKey) => {
+    const mnemonics = _get().mnemonics;
+    return mnemonics[publicKey];
   },
 }));
 

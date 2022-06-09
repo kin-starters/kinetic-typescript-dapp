@@ -26,7 +26,6 @@ export const SendKin: FC = () => {
 
   const [isBatch, setIsBatch] = useState(false);
   const [batch, setBatch] = useState([]);
-  console.log('🚀 ~ batch', batch);
 
   const addToBatch = () => {
     setIsBatch(true);
@@ -35,7 +34,6 @@ export const SendKin: FC = () => {
       { amount, destination: selectedToAccount.publicKey || address },
     ]);
   };
-  console.log('🚀 ~ addToBatch', addToBatch);
 
   const completeBatchPayment = useCallback(async () => {
     console.log('🚀 ~ completeBatchPayment', selectedFromAccount, batch);
@@ -89,7 +87,6 @@ export const SendKin: FC = () => {
   }, [mogami, notify, address, appIndex]);
 
   const completePayment = useCallback(async () => {
-    console.log('🚀 ~ completePayment', completePayment);
     if (!mogami) {
       notify({ type: 'error', message: `Kin Client not connected!` });
       console.log('error', `Send Transaction: Kin Client not connected!`);
@@ -104,7 +101,6 @@ export const SendKin: FC = () => {
         owner: selectedFromAccount,
         type: TransactionType.P2P,
       });
-      console.log('🚀 ~ transaction', transaction);
       notify({
         type: 'success',
         message: 'Transaction successful!',
@@ -124,16 +120,12 @@ export const SendKin: FC = () => {
 
     try {
       const balanceFrom = await mogami.balance(selectedFromAccount.publicKey);
-      console.log('🚀 ~ balanceFrom', balanceFrom);
       const balanceFromInKin = (Number(balanceFrom.value) / 100000).toString();
-      console.log('🚀 ~ balanceFromInKin', balanceFromInKin);
       updateBalance(selectedFromAccount, balanceFromInKin);
 
       if (selectedToAccount) {
         const balanceTo = await mogami.balance(selectedToAccount.publicKey);
-        console.log('🚀 ~ balanceTo', balanceTo);
         const balanceToInKin = (Number(balanceTo.value) / 100000).toString();
-        console.log('🚀 ~ balanceToInKin', balanceToInKin);
         updateBalance(selectedToAccount, balanceToInKin);
       }
     } catch (error) {
@@ -142,14 +134,14 @@ export const SendKin: FC = () => {
   }, [mogami, notify, address, appIndex]);
 
   const divStyle = {
-    width: '700px',
+    width: '608px',
     display: 'flex',
     justifyContent: 'space-between',
   };
   const inputStyle = {
     color: 'black',
     paddingLeft: '5px',
-    width: '600px',
+    width: '500px',
   };
   const labelStyle = { width: '600px', display: 'flex', marginLeft: '100px' };
   const linkStyle = { textDecoration: 'underline' };
@@ -172,7 +164,10 @@ export const SendKin: FC = () => {
                 <span>From: </span>
               </div>
 
-              <div className="accounts">
+              <div
+                className="accounts"
+                style={{ width: '608px', margin: 'auto' }}
+              >
                 {accounts.map((account) => {
                   const selected =
                     selectedFromAccount?.publicKey === account.publicKey;
@@ -197,7 +192,10 @@ export const SendKin: FC = () => {
                 <span>To: </span>
               </div>
 
-              <div className="accounts">
+              <div
+                className="accounts"
+                style={{ width: '600px', margin: 'auto' }}
+              >
                 {accounts.map((account) => {
                   const selected =
                     selectedToAccount?.publicKey === account.publicKey;
@@ -230,7 +228,7 @@ export const SendKin: FC = () => {
                     ? 'bg-pink-500 rounded'
                     : 'border border-sky-500 rounded'
                 } `}
-                style={{ margin: 'auto -4px' }}
+                style={{ margin: 'auto', width: '608px' }}
               >
                 <input
                   style={{ ...inputStyle, padding: 'auto 4px', width: '500px' }}

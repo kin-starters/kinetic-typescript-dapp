@@ -31,10 +31,8 @@ export const AirdropView: FC = () => {
                     account={selectedAccount}
                   />
 
-                  <div className="accounts">
+                  <div className="accounts" style={{ width: '608px' }}>
                     {accounts.map((account) => {
-                      console.log('🚀 ~ account', account);
-
                       return (
                         <AccountInfo
                           key={account.publicKey}

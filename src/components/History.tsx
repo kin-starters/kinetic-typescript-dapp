@@ -2,7 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { Keypair } from '@mogami/keypair';
 import useMogamiClientStore from '../stores/useMogamiClientStore';
 import useAccountsStore from '../stores/useAccountsStore';
-import { AccountInfo } from './AccountInfo';
+import { AccountInfo } from 'components/AccountInfo';
+import { CreateKinAccount } from 'components/CreateKinAccount';
 
 interface AccountHistory {
   account: Keypair;
@@ -11,25 +12,27 @@ const AccountHistory = ({ account }) => {
   const { mogami } = useMogamiClientStore();
   const [history, setHistory] = useState(null);
   const [loading, setLoading] = useState(false);
-  console.log('🚀 ~ history', history);
+
   const getHistory = useCallback(async () => {
     setLoading(true);
     setHistory(null);
     const hstry = await mogami.getHistory(account.publicKey);
     setHistory(hstry);
     setLoading(false);
-  }, [account.publicKey]);
+  }, [account?.publicKey]);
 
   useEffect(() => {
-    getHistory();
-  }, [account.publicKey]);
+    if (account?.publicKey) {
+      getHistory();
+    }
+  }, [account?.publicKey]);
 
   return (
     <div>
-      {history || loading ? (
+      {history?.data.length || loading ? (
         <div
           style={{
-            width: '700px',
+            width: '600px',
             display: 'flex',
             flexDirection: 'column',
           }}
@@ -38,14 +41,12 @@ const AccountHistory = ({ account }) => {
             <div style={{ width: '100%' }}>Loading...</div>
           ) : (
             history.data.map((historyEvent) => {
-              console.log('🚀 ~ historyEvent', historyEvent);
               return (
                 <div>
                   {historyEvent.history.map((hstry) => {
-                    console.log('🚀 ~ hstry', hstry);
                     return (
                       <div
-                        style={{ maxWidth: '100%' }}
+                        style={{ width: '608px' }}
                         className="p-5 my-5 text-left whitespace-pre-wrap break-words block absolute -inset-1 rounded border border-sky-500 relative"
                       >
                         <p>
@@ -96,12 +97,12 @@ const AccountHistory = ({ account }) => {
       ) : (
         <div
           style={{
-            width: '700px',
+            width: '608px',
             display: 'flex',
             flexDirection: 'column',
           }}
         >
-          'No History'
+          No History
         </div>
       )}
     </div>
@@ -113,6 +114,12 @@ export const History = () => {
   const { accounts, balances } = useAccountsStore();
   const [selectedAccount, setSelectedAccount] = useState(accounts[0] || null);
 
+  useEffect(() => {
+    if (accounts.length === 1) {
+      setSelectedAccount(accounts[0]);
+    }
+  }, [accounts]);
+
   return (
     <div className="md:w-full text-center text-slate-300 my-2">
       {mogami ? (
@@ -121,8 +128,6 @@ export const History = () => {
             <>
               <div className="accounts">
                 {accounts.map((account) => {
-                  console.log('🚀 ~ account', account);
-
                   return (
                     <AccountInfo
                       key={account.publicKey}

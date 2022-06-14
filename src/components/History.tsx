@@ -44,8 +44,10 @@ const AccountHistory = ({ account }) => {
               return (
                 <div>
                   {historyEvent.history.map((hstry) => {
+                    console.log('🚀 ~ hstry', hstry);
                     return (
                       <div
+                        key={hstry.signature}
                         style={{ width: '700px' }}
                         className="p-5 my-5 text-left whitespace-pre-wrap break-words block absolute -inset-1 rounded border border-sky-500 relative"
                       >
@@ -111,14 +113,8 @@ const AccountHistory = ({ account }) => {
 
 export const History = () => {
   const { mogami } = useMogamiClientStore();
-  const { accounts, balances } = useAccountsStore();
+  const { accounts, balances, signatures } = useAccountsStore();
   const [selectedAccount, setSelectedAccount] = useState(accounts[0] || null);
-
-  useEffect(() => {
-    if (accounts.length === 1) {
-      setSelectedAccount(accounts[0]);
-    }
-  }, [accounts]);
 
   return (
     <div className="md:w-full text-center text-slate-300 my-2">
@@ -133,7 +129,12 @@ export const History = () => {
                       key={account.publicKey}
                       publicKey={account.publicKey}
                       balance={balances[account.publicKey]}
-                      select={() => setSelectedAccount(account)}
+                      signature={signatures[account.publicKey]}
+                      select={(reset) =>
+                        reset
+                          ? setSelectedAccount(null)
+                          : setSelectedAccount(account)
+                      }
                       selected={
                         selectedAccount?.publicKey === account.publicKey
                       }

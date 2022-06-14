@@ -1,5 +1,5 @@
 // Next, React
-import { FC, useState } from 'react';
+import { FC, useState, useEffect } from 'react';
 
 // Components
 import { RequestAirdrop } from 'components/RequestAirdrop';
@@ -12,8 +12,10 @@ import useAccountsStore from '../../stores/useAccountsStore';
 
 export const AirdropView: FC = () => {
   const { mogami } = useMogamiClientStore();
-  const { accounts, balances } = useAccountsStore();
+  const { accounts, balances, signatures } = useAccountsStore();
+  console.log('🚀 ~ signatures', signatures);
   const [selectedAccount, setSelectedAccount] = useState(accounts[0] || null);
+  console.log('🚀 ~ selectedAccount', selectedAccount);
 
   return (
     <div className="md:hero mx-auto p-4">
@@ -38,7 +40,12 @@ export const AirdropView: FC = () => {
                           key={account.publicKey}
                           publicKey={account.publicKey}
                           balance={balances[account.publicKey]}
-                          select={() => setSelectedAccount(account)}
+                          signature={signatures[account.publicKey]}
+                          select={(reset) =>
+                            reset
+                              ? setSelectedAccount(null)
+                              : setSelectedAccount(account)
+                          }
                           selected={
                             selectedAccount?.publicKey === account.publicKey
                           }

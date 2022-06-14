@@ -8,7 +8,7 @@ export const HomeView: FC = () => {
     <div className="md:hero mx-auto p-4">
       <div className="md:hero-content flex flex-col">
         <h1 className="text-center pb-2 text-5xl md:pl-12 font-bold text-transparent bg-clip-text bg-gradient-to-tr from-[#9945FF] to-[#14F195]">
-          Kin Mogami DApp Demo{' '}
+          Kinetic DApp Demo{' '}
           <span className="text-sm font-normal align-top text-slate-700">
             v{pkg.version}
           </span>
@@ -20,7 +20,7 @@ export const HomeView: FC = () => {
         <div className="max-w-md mx-auto mockup-code bg-primary p-6 my-2 ">
           <pre data-prefix=">">
             <code className="truncate fade-in">
-              Start building with Kin on Solana{' '}
+              Start building with Kin via Kinetic{' '}
             </code>
           </pre>
         </div>

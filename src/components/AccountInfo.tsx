@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useStatus } from 'hooks/useStatus';
 
 interface AccountInfoProps {
   publicKey: string;
   balance: string;
+  signature?: string;
   selected?: boolean;
-  select?: () => void;
+  select?: (reset?: boolean) => void;
   disabled?: boolean;
   disabledSelected?: boolean;
   getMnemonic?: (publicKey: string) => void;
@@ -13,6 +15,7 @@ interface AccountInfoProps {
 export const AccountInfo = ({
   publicKey,
   balance,
+  signature,
   selected,
   select,
   disabled,
@@ -20,18 +23,29 @@ export const AccountInfo = ({
   getMnemonic,
 }: AccountInfoProps) => {
   const [mnemonic, setMnemonic] = useState(null);
+  const [confirmations, finalized] = (signature &&
+    useStatus({ signature })) || [0, false];
+
+  useEffect(() => {
+    if (selected && confirmations) {
+      select(true);
+    }
+  }, [selected, confirmations]);
+
   return (
     <div
       className={`my-4 py-3 px-5 ${
         selected
           ? `rounded bg-pink-500 relative ${
-              disabledSelected ? 'opacity-60 pointer-events-none' : ''
+              disabledSelected || confirmations
+                ? 'opacity-60 pointer-events-none'
+                : ''
             }`
           : `rounded border border-sky-500 relative ${
-              disabled ? 'opacity-25 pointer-events-none' : ''
+              disabled || confirmations ? 'opacity-25 pointer-events-none' : ''
             }`
       } ${select ? 'cursor-pointer' : ''} `}
-      onClick={select && select}
+      onClick={select && finalized ? () => select() : () => {}}
     >
       <span className="relative text-white">{publicKey}</span>
       <span className="relative text-white">{` - `}</span>
@@ -81,6 +95,11 @@ export const AccountInfo = ({
       ) : null}
       {mnemonic ? (
         <p style={{ width: '65%', margin: '10px auto auto' }}>{mnemonic}</p>
+      ) : null}
+      {confirmations ? (
+        <p style={{ width: '65%', margin: '10px auto auto' }}>
+          Confirmations: {confirmations}
+        </p>
       ) : null}
     </div>
   );

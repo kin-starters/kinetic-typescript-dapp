@@ -7,11 +7,13 @@ import useAccountsStore from '../stores/useAccountsStore';
 import { AccountInfo } from 'components/AccountInfo';
 import { CreateKinAccount } from 'components/CreateKinAccount';
 
+// import { useStatus } from 'hooks/useStatus';
+
 import { notify } from '../utils/notifications';
 
 export const SendKin: FC = () => {
   const { mogami } = useMogamiClientStore();
-  const { accounts, balances, updateBalance } = useAccountsStore();
+  const { accounts, balances, updateBalance, signatures } = useAccountsStore();
   const [selectedFromAccount, setSelectedFromAccount] = useState(
     accounts[0] || null
   );
@@ -25,6 +27,14 @@ export const SendKin: FC = () => {
   const [sending, setSending] = useState(false);
 
   const [batch, setBatch] = useState([]);
+
+  const [signature, setSignature] = useState('');
+  console.log('🚀 ~ signature', signature);
+
+  // const [confirmations, finalized] = (signature &&
+  //   useStatus({ signature })) || [0, false];
+  // console.log('🚀 ~ finalized', finalized);
+  // console.log('🚀 ~ confirmations', confirmations);
 
   const addToBatch = () => {
     setBatch([
@@ -51,6 +61,8 @@ export const SendKin: FC = () => {
         type: TransactionType.P2P,
         payments: batch,
       });
+      console.log('🚀 ~ transaction', transaction);
+      setSignature(transaction.signature);
       setBatch([]);
       notify({
         type: 'success',
@@ -103,6 +115,7 @@ export const SendKin: FC = () => {
   };
 
   const completePayment = async () => {
+    console.log('🚀 ~ completePayment');
     if (!mogami) {
       notify({ type: 'error', message: `Kin Client not connected!` });
       console.log('error', `Send Transaction: Kin Client not connected!`);
@@ -121,6 +134,8 @@ export const SendKin: FC = () => {
         owner: selectedFromAccount,
         type: TransactionType.P2P,
       });
+      console.log('🚀 ~ transaction', transaction);
+      setSignature(transaction.signature);
       notify({
         type: 'success',
         message: 'Transaction successful!',
@@ -140,12 +155,16 @@ export const SendKin: FC = () => {
 
     try {
       const balanceFrom = await mogami.balance(selectedFromAccount.publicKey);
+      console.log('🚀 ~ balanceFrom', balanceFrom);
       const balanceFromInKin = (Number(balanceFrom.value) / 100000).toString();
+      console.log('🚀 ~ balanceFromInKin', balanceFromInKin);
       updateBalance(selectedFromAccount, balanceFromInKin);
 
       if (selectedToAccount) {
         const balanceTo = await mogami.balance(selectedToAccount.publicKey);
+        console.log('🚀 ~ balanceTo', balanceTo);
         const balanceInKin = (Number(balanceTo.value) / 100000).toString();
+        console.log('🚀 ~ balanceInKin', balanceInKin);
         updateBalance(selectedToAccount, balanceInKin);
       }
     } catch (error) {
@@ -200,9 +219,12 @@ export const SendKin: FC = () => {
                       <AccountInfo
                         publicKey={account.publicKey}
                         balance={balances[account.publicKey]}
-                        select={() => {
-                          setSelectedFromAccount(selected ? null : account);
-                        }}
+                        signature={signatures[account.publicKey]}
+                        select={(reset) =>
+                          reset
+                            ? setSelectedFromAccount(null)
+                            : setSelectedFromAccount(selected ? null : account)
+                        }
                         disabled={!!batch.length}
                         selected={selected}
                         disabledSelected={selected && !!batch.length}
@@ -237,9 +259,12 @@ export const SendKin: FC = () => {
                         key={account.publicKey}
                         publicKey={account.publicKey}
                         balance={balances[account.publicKey]}
-                        select={() => {
-                          setSelectedToAccount(selected ? null : account);
-                        }}
+                        signature={signatures[account.publicKey]}
+                        select={(reset) =>
+                          reset
+                            ? setSelectedToAccount(null)
+                            : setSelectedToAccount(selected ? null : account)
+                        }
                         selected={selected}
                         disabled={selectedFrom}
                       />

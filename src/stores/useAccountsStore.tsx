@@ -5,23 +5,31 @@ interface Hash {
   [key: string]: string;
 }
 
+interface AddAccount {
+  account: Keypair;
+  mnemonic: string;
+  signature?: string;
+}
 interface KinAccountsStore extends State {
   accounts: Keypair[];
   mnemonics: Hash;
+  signatures: Hash;
   balances: Hash;
-  addAccount: (account: Keypair, mnemonic: string) => void;
+  addAccount: ({ account, signature, mnemonic }: AddAccount) => void;
   updateBalance: (account: Keypair, amount: string) => void;
   getMnemonic: (publicKey: string) => string;
 }
 
 const useAccountsStore = create<KinAccountsStore>((set, _get) => ({
   accounts: [],
+  signatures: {},
   mnemonics: {},
   balances: {},
-  addAccount: (account: Keypair, mnemonic: string) => {
+  addAccount: ({ account, signature, mnemonic }: AddAccount) => {
     set((s) => {
       s.accounts = [...s.accounts, account];
       s.mnemonics[account.publicKey] = mnemonic;
+      if (signature) s.signatures[account.publicKey] = signature;
       s.balances[account.publicKey] = '0';
       console.log(`Account added, `, account.publicKey);
     });

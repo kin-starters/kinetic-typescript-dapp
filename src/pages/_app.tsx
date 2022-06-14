@@ -22,7 +22,7 @@ const App: FC<AppProps> = ({ Component, pageProps }) => {
   return (
     <>
       <Head>
-        <title>Kin Mogami Demo DApp</title>
+        <title>Kinetic DApp Demo</title>
       </Head>
 
       <div className="flex flex-col h-screen">

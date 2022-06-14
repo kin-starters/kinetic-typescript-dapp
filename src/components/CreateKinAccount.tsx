@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { Keypair } from '@mogami/keypair';
 import { notify } from '../utils/notifications';
 import useMogamiClientStore from '../stores/useMogamiClientStore';
@@ -15,8 +15,15 @@ export const CreateKinAccount = ({
   disabled = false,
 }: CreateKinAccountProps) => {
   const { mogami } = useMogamiClientStore();
-  const { accounts, addAccount, balances, updateBalance, getMnemonic } =
-    useAccountsStore();
+  const {
+    accounts,
+    addAccount,
+    balances,
+    signatures,
+    updateBalance,
+    getMnemonic,
+  } = useAccountsStore();
+  console.log('🚀 ~ accounts', accounts);
 
   const [sending, setSending] = useState(false);
   const [fromMnemonic, setFromMnemonic] = useState('');
@@ -52,7 +59,7 @@ export const CreateKinAccount = ({
         account = await mogami.createAccount(keypair);
       }
 
-      addAccount(keypair, mnemonic);
+      addAccount({ account: keypair, signature: account?.signature, mnemonic });
 
       if (account) {
         notify({
@@ -141,6 +148,7 @@ export const CreateKinAccount = ({
                     key={account.publicKey}
                     publicKey={account.publicKey}
                     balance={balances[account.publicKey]}
+                    signature={signatures[account.publicKey]}
                     getMnemonic={getMnemonic}
                   />
                 );

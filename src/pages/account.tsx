@@ -6,7 +6,7 @@ const SendKin: NextPage = () => {
   return (
     <div>
       <Head>
-        <title>Kin Mogami Demo DApp</title>
+        <title>Kinetic DApp Demo</title>
         <meta name="description" content="Basic Functionality" />
       </Head>
       <AccountView />

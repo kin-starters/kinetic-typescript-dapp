@@ -1,25 +1,25 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Keypair } from '@mogami/keypair';
-import useMogamiClientStore from '../stores/useMogamiClientStore';
+import { useEffect, useState } from 'react';
+import { Keypair } from '@kin-kinetic/keypair';
+import useKineticClientStore from '../stores/useKineticClientStore';
 import useAccountsStore from '../stores/useAccountsStore';
 import { AccountInfo } from 'components/AccountInfo';
 import { CreateKinAccount } from 'components/CreateKinAccount';
 
-interface AccountHistory {
+interface AccountHistoryProps {
   account: Keypair;
 }
-const AccountHistory = ({ account }) => {
-  const { mogami } = useMogamiClientStore();
+const AccountHistory = ({ account }: AccountHistoryProps) => {
+  const { kinetic } = useKineticClientStore();
   const [history, setHistory] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const getHistory = useCallback(async () => {
+  const getHistory = async () => {
     setLoading(true);
     setHistory(null);
-    const hstry = await mogami.getHistory(account.publicKey);
+    const hstry = await kinetic.getHistory({ account: account.publicKey });
     setHistory(hstry);
     setLoading(false);
-  }, [account?.publicKey]);
+  };
 
   useEffect(() => {
     if (account?.publicKey) {
@@ -58,7 +58,11 @@ const AccountHistory = ({ account }) => {
                               href={
                                 'https://explorer.solana.com/tx/' +
                                 hstry.signature +
-                                `?cluster=devnet`
+                                `${
+                                  process.env.KINETIC_LOCAL_SOLANA
+                                    ? `?cluster=custom&customUrl=${process.env.KINETIC_LOCAL_SOLANA}`
+                                    : '?cluster=devnet'
+                                }`
                               }
                               target="_blank"
                               rel="noreferrer"
@@ -112,13 +116,13 @@ const AccountHistory = ({ account }) => {
 };
 
 export const History = () => {
-  const { mogami } = useMogamiClientStore();
+  const { kinetic } = useKineticClientStore();
   const { accounts, balances, signatures } = useAccountsStore();
   const [selectedAccount, setSelectedAccount] = useState(accounts[0] || null);
 
   return (
     <div className="md:w-full text-center text-slate-300 my-2">
-      {mogami ? (
+      {kinetic ? (
         <>
           {accounts.length > 0 ? (
             <>

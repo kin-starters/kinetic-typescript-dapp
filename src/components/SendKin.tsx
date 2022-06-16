@@ -1,18 +1,22 @@
-import { FC, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
+import {
+  MakeTransferBatchOptions,
+  TransferDestination,
+} from '@kin-kinetic/sdk';
 import { TransactionType } from '@kin-tools/kin-memo';
-import { Commitment } from '@mogami/solana';
+import { Commitment } from '@kin-kinetic/solana';
 
-import useMogamiClientStore from '../stores/useMogamiClientStore';
+import useKineticClientStore from '../stores/useKineticClientStore';
 import useAccountsStore from '../stores/useAccountsStore';
 import { AccountInfo } from 'components/AccountInfo';
 import { CreateKinAccount } from 'components/CreateKinAccount';
 
-// import { useStatus } from 'hooks/useStatus';
+import { useStatus } from 'hooks/useStatus';
 
 import { notify } from '../utils/notifications';
 
 export const SendKin: FC = () => {
-  const { mogami } = useMogamiClientStore();
+  const { kinetic } = useKineticClientStore();
   const { accounts, balances, updateBalance, signatures } = useAccountsStore();
   const [selectedFromAccount, setSelectedFromAccount] = useState(
     accounts[0] || null
@@ -29,70 +33,28 @@ export const SendKin: FC = () => {
   const [batch, setBatch] = useState([]);
 
   const [signature, setSignature] = useState('');
-  console.log('🚀 ~ signature', signature);
+  const [balancesToUpdate, setBalancesToUpdate] = useState([]);
+  const [confirmations, finalized] = useStatus({ signature });
 
-  // const [confirmations, finalized] = (signature &&
-  //   useStatus({ signature })) || [0, false];
-  // console.log('🚀 ~ finalized', finalized);
-  // console.log('🚀 ~ confirmations', confirmations);
-
-  const addToBatch = () => {
-    setBatch([
-      ...batch,
-      { amount, destination: selectedToAccount.publicKey || address },
-    ]);
+  const reset = () => {
+    setSelectedFromAccount(null);
+    setSelectedToAccount(null);
+    setAppIndex('');
+    setAddress('');
+    setAmount('');
+    setSending(false);
+    setBatch([]);
+    setSignature('');
+    setBalancesToUpdate([]);
   };
 
-  const completeBatchPayment = async () => {
-    if (!mogami) {
-      notify({ type: 'error', message: `Kin Client not connected!` });
-      console.log('error', `Send Transaction: Kin Client not connected!`);
-    }
-
+  const updateBalances = (accs: string[]) => {
     try {
-      setSending(true);
-      notify({
-        type: 'info',
-        message: 'Transaction on its way!',
-      });
-      const transaction = await mogami.makeTransferBatch({
-        commitment: Commitment.Finalized,
-        owner: selectedFromAccount,
-        type: TransactionType.P2P,
-        payments: batch,
-      });
-      console.log('🚀 ~ transaction', transaction);
-      setSignature(transaction.signature);
-      setBatch([]);
-      notify({
-        type: 'success',
-        message: 'Transaction successful!',
-        txid: transaction.signature,
-      });
-    } catch (error: any) {
-      error.message &&
-        notify({
-          type: 'error',
-          message: `Transaction failed!`,
-          description: error?.message,
-        });
-      console.log('error', `Transaction failed! ${error?.message}`);
-    }
-
-    setSending(false);
-
-    try {
-      const balanceFrom = await mogami.balance(selectedFromAccount.publicKey);
-      const balanceFromInKin = (Number(balanceFrom.value) / 100000).toString();
-      updateBalance(selectedFromAccount, balanceFromInKin);
-
-      const promises = batch.map((send) => {
+      const promises = accs.map((acc) => {
         return async () => {
-          const balance = await mogami.balance(send.destination);
-          const balanceInKin = (Number(balance.value) / 100000).toString();
-          const account = accounts.find(
-            (acc) => acc.publicKey === send.destination
-          );
+          const balance = await kinetic.getBalance({ account: acc });
+          const balanceInKin = (Number(balance.balance) / 100000).toString();
+          const account = accounts.find((ac) => ac.publicKey === acc);
           if (account) {
             updateBalance(account, balanceInKin);
           }
@@ -114,9 +76,28 @@ export const SendKin: FC = () => {
     }
   };
 
-  const completePayment = async () => {
-    console.log('🚀 ~ completePayment');
-    if (!mogami) {
+  useEffect(() => {
+    if (finalized && sending && balancesToUpdate.length) {
+      notify({
+        type: 'success',
+        message: 'Transaction successful!',
+        txid: signature,
+      });
+      updateBalances(balancesToUpdate);
+      reset();
+    }
+  }, [confirmations, finalized, sending, balancesToUpdate]);
+
+  const addToBatch = () => {
+    const newTransaction: TransferDestination = {
+      amount,
+      destination: selectedToAccount.publicKey || address,
+    };
+    setBatch([...batch, newTransaction]);
+  };
+
+  const completeBatchPayment = async () => {
+    if (!kinetic) {
       notify({ type: 'error', message: `Kin Client not connected!` });
       console.log('error', `Send Transaction: Kin Client not connected!`);
     }
@@ -127,20 +108,27 @@ export const SendKin: FC = () => {
         type: 'info',
         message: 'Transaction on its way!',
       });
-      const transaction = await mogami.makeTransfer({
-        amount,
-        commitment: Commitment.Finalized,
-        destination: address || selectedToAccount.publicKey,
+
+      const batchOptions: MakeTransferBatchOptions = {
+        commitment: Commitment.Confirmed,
         owner: selectedFromAccount,
         type: TransactionType.P2P,
-      });
+        destinations: batch,
+      };
+
+      const transaction = await kinetic.makeTransferBatch(batchOptions);
+
+      if (!transaction.signature) {
+        notify({
+          type: 'success',
+          message:
+            'Transaction confirmed. Check your balance in a minute once its finalized',
+          txid: signature,
+        });
+      } else {
+        setSignature(transaction.signature);
+      }
       console.log('🚀 ~ transaction', transaction);
-      setSignature(transaction.signature);
-      notify({
-        type: 'success',
-        message: 'Transaction successful!',
-        txid: transaction.signature,
-      });
     } catch (error: any) {
       error.message &&
         notify({
@@ -149,27 +137,56 @@ export const SendKin: FC = () => {
           description: error?.message,
         });
       console.log('error', `Transaction failed! ${error?.message}`);
+      setSending(false);
     }
 
-    setSending(false);
+    const toUpdate = [
+      ...new Set([
+        selectedFromAccount.publicKey,
+        ...batch.map((send) => send.destination),
+      ]),
+    ];
+
+    setBalancesToUpdate(toUpdate);
+  };
+
+  const completePayment = async () => {
+    if (!kinetic) {
+      notify({ type: 'error', message: `Kin Client not connected!` });
+      console.log('error', `Send Transaction: Kin Client not connected!`);
+    }
 
     try {
-      const balanceFrom = await mogami.balance(selectedFromAccount.publicKey);
-      console.log('🚀 ~ balanceFrom', balanceFrom);
-      const balanceFromInKin = (Number(balanceFrom.value) / 100000).toString();
-      console.log('🚀 ~ balanceFromInKin', balanceFromInKin);
-      updateBalance(selectedFromAccount, balanceFromInKin);
-
-      if (selectedToAccount) {
-        const balanceTo = await mogami.balance(selectedToAccount.publicKey);
-        console.log('🚀 ~ balanceTo', balanceTo);
-        const balanceInKin = (Number(balanceTo.value) / 100000).toString();
-        console.log('🚀 ~ balanceInKin', balanceInKin);
-        updateBalance(selectedToAccount, balanceInKin);
-      }
-    } catch (error) {
-      console.log('🚀 ~ error', error);
+      setSending(true);
+      notify({
+        type: 'info',
+        message: 'Transaction on its way!',
+      });
+      const transaction = await kinetic.makeTransfer({
+        amount,
+        commitment: Commitment.Confirmed,
+        destination: address || selectedToAccount.publicKey,
+        owner: selectedFromAccount,
+        type: TransactionType.P2P,
+      });
+      console.log('🚀 ~ transaction', transaction);
+      setSignature(transaction.signature);
+    } catch (error: any) {
+      error.message &&
+        notify({
+          type: 'error',
+          message: `Transaction failed!`,
+          description: error?.message,
+        });
+      console.log('error', `Transaction failed! ${error?.message}`);
+      setSending(false);
     }
+
+    const toUpdate = [selectedFromAccount.publicKey];
+    if (selectedToAccount) {
+      toUpdate.push(selectedToAccount.publicKey);
+    }
+    setBalancesToUpdate(toUpdate);
   };
 
   const divStyle = {
@@ -191,7 +208,7 @@ export const SendKin: FC = () => {
       style={{ width: '700px' }}
     >
       {(() => {
-        if (!mogami) {
+        if (!kinetic) {
           return <span>Not connected to Kin Client</span>;
         }
 
@@ -296,7 +313,11 @@ export const SendKin: FC = () => {
                   href={
                     'https://explorer.solana.com/address/' +
                     address +
-                    `?cluster=devnet`
+                    `${
+                      process.env.KINETIC_LOCAL_SOLANA
+                        ? `?cluster=custom&customUrl=${process.env.KINETIC_LOCAL_SOLANA}`
+                        : '?cluster=devnet'
+                    }`
                   }
                   target="_blank"
                   rel="noreferrer"
@@ -375,7 +396,7 @@ export const SendKin: FC = () => {
                 }
                 disabled={
                   sending ||
-                  !mogami ||
+                  !kinetic ||
                   (!batch.length &&
                     (!Number(amount) ||
                       !selectedFromAccount ||
@@ -412,7 +433,7 @@ export const SendKin: FC = () => {
                 onClick={addToBatch}
                 disabled={
                   sending ||
-                  !mogami ||
+                  !kinetic ||
                   !appIndex ||
                   !Number(amount) ||
                   !selectedFromAccount ||
@@ -436,6 +457,7 @@ export const SendKin: FC = () => {
                   Add to Batch
                 </span>
               </button>
+              {confirmations ? <div>Confirmations: {confirmations}</div> : null}
             </div>
           );
         }

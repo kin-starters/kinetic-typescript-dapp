@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { Keypair } from '@mogami/keypair';
+import { Keypair } from '@kin-kinetic/keypair';
+import { Commitment } from '@kin-kinetic/solana';
+
 import { notify } from '../utils/notifications';
-import useMogamiClientStore from '../stores/useMogamiClientStore';
+import useKineticClientStore from '../stores/useKineticClientStore';
 import useAccountsStore from '../stores/useAccountsStore';
 import { AccountInfo } from './AccountInfo';
 
@@ -14,7 +16,7 @@ export const CreateKinAccount = ({
   withInput = false,
   disabled = false,
 }: CreateKinAccountProps) => {
-  const { mogami } = useMogamiClientStore();
+  const { kinetic } = useKineticClientStore();
   const {
     accounts,
     addAccount,
@@ -43,20 +45,28 @@ export const CreateKinAccount = ({
           throw new Error('Account already exists!');
         }
         try {
-          const rawBalance = await mogami.balance(keypair.publicKey);
-          balance = (Number(rawBalance.value) / 100000).toString();
+          const rawBalance = await kinetic.getBalance({
+            account: keypair.publicKey,
+          });
+          balance = (Number(rawBalance.balance) / 100000).toString();
           setFromMnemonic('');
         } catch (error) {
           console.log('🚀 ~ error', error);
         }
         try {
-          account = await mogami.createAccount(keypair);
+          account = await kinetic.createAccount({
+            owner: keypair,
+            commitment: Commitment.Confirmed,
+          });
           setFromMnemonic('');
         } catch (error) {
           console.log('🚀 ~ error', error);
         }
       } else {
-        account = await mogami.createAccount(keypair);
+        account = await kinetic.createAccount({
+          owner: keypair,
+          commitment: Commitment.Confirmed,
+        });
       }
 
       addAccount({ account: keypair, signature: account?.signature, mnemonic });
@@ -105,7 +115,7 @@ export const CreateKinAccount = ({
 
   return (
     <div className="md:w-full text-center text-slate-300 my-2">
-      {mogami ? (
+      {kinetic ? (
         <>
           {withInput ? (
             <>

@@ -55,7 +55,11 @@ export const AccountInfo = ({
           href={
             'https://explorer.solana.com/address/' +
             publicKey +
-            `?cluster=devnet`
+            `${
+              process.env.KINETIC_LOCAL_SOLANA
+                ? `?cluster=custom&customUrl=${process.env.KINETIC_LOCAL_SOLANA}`
+                : '?cluster=devnet'
+            }`
           }
           target="_blank"
           rel="noreferrer"

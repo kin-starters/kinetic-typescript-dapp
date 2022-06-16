@@ -20,7 +20,11 @@ export const useStatus = ({ signature }) => {
       } catch (error) {}
     };
 
-    getStatus();
+    if (signature) {
+      getStatus();
+    } else {
+      setStatus(null);
+    }
   }, [signature]);
   return [
     status?.confirmations || 0,

@@ -1145,6 +1145,45 @@
     "@json-rpc-tools/types" "^1.7.6"
     "@pedrouid/environment" "^1.0.1"
 
+"@kin-kinetic/keypair@1.0.0-beta.10":
+  version "1.0.0-beta.10"
+  resolved "https://registry.yarnpkg.com/@kin-kinetic/keypair/-/keypair-1.0.0-beta.10.tgz#bd6cc48321d2202d6e9ece702eb723eb279bbf78"
+  integrity sha512-9xTo1199BDBohXFziv+s6Ob+62Ael9EfJSWHA6dbcVFc0lUXk+NERANsb4X6KQoZJLcdyz6lwYU3eqoKWl7Lxw==
+  dependencies:
+    "@scure/bip39" "^1.0.0"
+    "@solana/web3.js" "^1.43.2"
+    create-hmac "^1.1.7"
+    tslib "^2.4.0"
+
+"@kin-kinetic/sdk@^1.0.0-beta.10":
+  version "1.0.0-beta.10"
+  resolved "https://registry.yarnpkg.com/@kin-kinetic/sdk/-/sdk-1.0.0-beta.10.tgz#c53b713e2b345c78a2a35fdd9907165fbff2c995"
+  integrity sha512-DQlLnxLt8cR3HKy3iq/fBPA7Sva8j2EqSp23EBQHfZoEQy+c3yJwQqgXJh4Pqsux2LmJivgipQNM+MNNv9obOQ==
+  dependencies:
+    "@kin-kinetic/keypair" "1.0.0-beta.10"
+    "@kin-kinetic/solana" "1.0.0-beta.10"
+    "@kin-tools/kin-memo" "^1.5.0"
+    "@kin-tools/kin-transaction" "^1.5.0"
+    "@scure/bip39" "^1.0.0"
+    "@solana/spl-token" "^0.2.0"
+    "@solana/web3.js" "^1.43.2"
+    axios "^0.27.2"
+    create-hmac "^1.1.7"
+    tslib "^2.4.0"
+
+"@kin-kinetic/solana@1.0.0-beta.10":
+  version "1.0.0-beta.10"
+  resolved "https://registry.yarnpkg.com/@kin-kinetic/solana/-/solana-1.0.0-beta.10.tgz#69cc2dbcdbc87b19a7fa118455fa1387348113e0"
+  integrity sha512-MvQHNssdaEO+wXu7ijKqqPFHvTqSmLDoB3WDNywETXBfuh6pmgQrqD1xOSC2SVCnZH5ZQI3XYLn1nNg7qTVnRA==
+  dependencies:
+    "@kin-kinetic/keypair" "1.0.0-beta.10"
+    "@scure/bip39" "^1.0.0"
+    "@solana/spl-token" "^0.2.0"
+    "@solana/web3.js" "^1.43.2"
+    axios "^0.27.2"
+    create-hmac "^1.1.7"
+    tslib "^2.4.0"
+
 "@kin-tools/kin-memo@^1.3.1", "@kin-tools/kin-memo@^1.5.0":
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/@kin-tools/kin-memo/-/kin-memo-1.5.0.tgz#a6cdce3b9960f7df92725d24f6641f3d0408f5c5"
@@ -1193,45 +1232,6 @@
   version "6.10.0"
   resolved "https://registry.yarnpkg.com/@ledgerhq/logs/-/logs-6.10.0.tgz#c012c1ecc1a0e53d50e6af381618dca5268461c1"
   integrity sha512-lLseUPEhSFUXYTKj6q7s2O3s2vW2ebgA11vMAlKodXGf5AFw4zUoEbTz9CoFOC9jS6xY4Qr8BmRnxP/odT4Uuw==
-
-"@mogami/keypair@1.0.0-beta.8":
-  version "1.0.0-beta.8"
-  resolved "https://registry.yarnpkg.com/@mogami/keypair/-/keypair-1.0.0-beta.8.tgz#bdbdd02dfb4079408dd881af52179c3239d21b41"
-  integrity sha512-Xxk48R0Cw+uraikn/LXF/gJVVxJmR3PtpH9VfMZXwFMRoUHLECg0gSNzrz1txFqjxpUdqf49jDbSEAbeT1tYmw==
-  dependencies:
-    "@scure/bip39" "^1.0.0"
-    "@solana/web3.js" "^1.43.2"
-    create-hmac "^1.1.7"
-    tslib "^2.4.0"
-
-"@mogami/sdk@^1.0.0-beta.8":
-  version "1.0.0-beta.8"
-  resolved "https://registry.yarnpkg.com/@mogami/sdk/-/sdk-1.0.0-beta.8.tgz#ed5609c05229a08be3932f993473e80188656b2d"
-  integrity sha512-bYO9JDDScJwR+MLCVWPTttJ/QAeo9HCAyFDbr27ZACgiGmwuEjUNkpIs6wNuzbgsKf2VvJ9hFlvMB3qaQkpAfw==
-  dependencies:
-    "@kin-tools/kin-memo" "^1.5.0"
-    "@kin-tools/kin-transaction" "^1.5.0"
-    "@mogami/keypair" "1.0.0-beta.8"
-    "@mogami/solana" "1.0.0-beta.8"
-    "@scure/bip39" "^1.0.0"
-    "@solana/spl-token" "^0.2.0"
-    "@solana/web3.js" "^1.43.2"
-    axios "^0.27.2"
-    create-hmac "^1.1.7"
-    tslib "^2.4.0"
-
-"@mogami/solana@1.0.0-beta.8":
-  version "1.0.0-beta.8"
-  resolved "https://registry.yarnpkg.com/@mogami/solana/-/solana-1.0.0-beta.8.tgz#9f4cd3380173641ab0fae080db95bbdec8ca1952"
-  integrity sha512-qxeIeDyrEMwyg6Z4zqAaaMCgGDJrHrRegHAGop9+A903D3COOheezirA6MkxGuplNqgYChJe8GtD8uLRs81XSg==
-  dependencies:
-    "@mogami/keypair" "1.0.0-beta.8"
-    "@scure/bip39" "^1.0.0"
-    "@solana/spl-token" "^0.2.0"
-    "@solana/web3.js" "^1.43.2"
-    axios "^0.27.2"
-    create-hmac "^1.1.7"
-    tslib "^2.4.0"
 
 "@next/env@12.0.8":
   version "12.0.8"

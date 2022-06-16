@@ -6,16 +6,16 @@ import { AppBar } from '../components/AppBar';
 import { ContentContainer } from '../components/ContentContainer';
 import { Footer } from '../components/Footer';
 import Notifications from '../components/Notification';
-import useMogamiClientStore from '../stores/useMogamiClientStore';
+import useKineticClientStore from '../stores/useKineticClientStore';
 
 require('@solana/wallet-adapter-react-ui/styles.css');
 require('../styles/globals.css');
 
 const App: FC<AppProps> = ({ Component, pageProps }) => {
-  const { setupMogami, mogami } = useMogamiClientStore();
+  const { setupKinetic, kinetic } = useKineticClientStore();
   const [settingUp, setSettingUp] = useState(false);
-  if (!mogami && !settingUp) {
-    setupMogami();
+  if (!kinetic && !settingUp) {
+    setupKinetic();
     setSettingUp(true);
   }
 

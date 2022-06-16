@@ -1,12 +1,12 @@
 import { useCallback, useState } from 'react';
 import { notify } from '../utils/notifications';
 
-import useMogamiClientStore from '../stores/useMogamiClientStore';
+import useKineticClientStore from '../stores/useKineticClientStore';
 import useAccountsStore from '../stores/useAccountsStore';
 
 export const RequestAirdrop = ({ account, disabled }) => {
-  const { mogami } = useMogamiClientStore();
-  const { balances, updateBalance } = useAccountsStore();
+  const { kinetic } = useKineticClientStore();
+  const { updateBalance } = useAccountsStore();
 
   const [sending, setSending] = useState(false);
 
@@ -23,7 +23,11 @@ export const RequestAirdrop = ({ account, disabled }) => {
 
     try {
       setSending(true);
-      const airdrop = await mogami.requestAirdrop(account.publicKey, '1000');
+      const airdrop = await kinetic.requestAirdrop({
+        account: account.publicKey,
+        amount: '1000',
+      });
+      console.log('🚀 ~ airdrop', airdrop);
 
       notify({
         type: 'success',
@@ -41,8 +45,8 @@ export const RequestAirdrop = ({ account, disabled }) => {
     setSending(false);
 
     try {
-      const balance = await mogami.balance(account.publicKey);
-      const balanceInKin = (Number(balance.value) / 100000).toString();
+      const balance = await kinetic.getBalance({ account: account.publicKey });
+      const balanceInKin = (Number(balance.balance) / 100000).toString();
       updateBalance(account, balanceInKin);
     } catch (error) {
       console.log('🚀 ~ error', error);

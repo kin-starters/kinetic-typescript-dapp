@@ -7,11 +7,11 @@ import { CreateKinAccount } from 'components/CreateKinAccount';
 import { AccountInfo } from 'components/AccountInfo';
 
 // Kin
-import useMogamiClientStore from '../../stores/useMogamiClientStore';
+import useKineticClientStore from '../../stores/useKineticClientStore';
 import useAccountsStore from '../../stores/useAccountsStore';
 
 export const AirdropView: FC = () => {
-  const { mogami } = useMogamiClientStore();
+  const { kinetic } = useKineticClientStore();
   const { accounts, balances, signatures } = useAccountsStore();
   console.log('🚀 ~ signatures', signatures);
   const [selectedAccount, setSelectedAccount] = useState(accounts[0] || null);
@@ -24,7 +24,7 @@ export const AirdropView: FC = () => {
           Airdrop
         </h1>
         <div className="md:w-full text-center text-slate-300 my-2 fade-in">
-          {mogami ? (
+          {kinetic ? (
             <>
               {accounts.length > 0 ? (
                 <>

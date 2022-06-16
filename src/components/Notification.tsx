@@ -81,7 +81,13 @@ const Notification = ({ type, message, description, txid, onHide }) => {
               <div className="flex flex-row">
                 <a
                   href={
-                    'https://explorer.solana.com/tx/' + txid + `?cluster=devnet`
+                    'https://explorer.solana.com/tx/' +
+                    txid +
+                    `${
+                      process.env.KINETIC_LOCAL_SOLANA
+                        ? `?cluster=custom&customUrl=${process.env.KINETIC_LOCAL_SOLANA}`
+                        : '?cluster=devnet'
+                    }`
                   }
                   target="_blank"
                   rel="noreferrer"

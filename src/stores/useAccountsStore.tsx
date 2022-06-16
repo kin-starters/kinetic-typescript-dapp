@@ -1,5 +1,5 @@
 import create, { State } from 'zustand';
-import { Keypair } from '@mogami/keypair';
+import { Keypair } from '@kin-kinetic/keypair';
 
 interface Hash {
   [key: string]: string;

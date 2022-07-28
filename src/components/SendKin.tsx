@@ -162,13 +162,16 @@ export const SendKin: FC = () => {
         type: 'info',
         message: 'Transaction on its way!',
       });
-      const transaction = await kinetic.makeTransfer({
+
+      const transactionOptions = {
         amount,
         commitment: Commitment.Confirmed,
         destination: address || selectedToAccount.publicKey,
         owner: selectedFromAccount,
         type: TransactionType.P2P,
-      });
+      };
+      console.log('🚀 ~ transactionOptions', transactionOptions);
+      const transaction = await kinetic.makeTransfer(transactionOptions);
       console.log('🚀 ~ transaction', transaction);
       setSignature(transaction.signature);
     } catch (error: any) {

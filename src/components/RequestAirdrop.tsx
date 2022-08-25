@@ -4,19 +4,19 @@ import { notify } from '../utils/notifications';
 import useKineticClientStore from '../stores/useKineticClientStore';
 import useAccountsStore from '../stores/useAccountsStore';
 
-export const RequestAirdrop = ({ account, disabled }) => {
+export const RequestAirdrop = ({ account, disabled, address }) => {
   const { kinetic } = useKineticClientStore();
   const { updateBalance } = useAccountsStore();
 
   const [sending, setSending] = useState(false);
 
   const onClick = useCallback(async () => {
-    if (!account.publicKey) {
-      console.log('error', 'Kin Client not connected!');
+    if (!account?.publicKey && !address) {
+      console.log('error', 'No Address!');
       notify({
         type: 'error',
         message: 'error',
-        description: 'Wallet not connected!',
+        description: 'No Address!',
       });
       return;
     }
@@ -24,7 +24,7 @@ export const RequestAirdrop = ({ account, disabled }) => {
     try {
       setSending(true);
       const airdrop = await kinetic.requestAirdrop({
-        account: account.publicKey,
+        account: account?.publicKey || address,
         amount: '1000',
       });
       console.log('🚀 ~ airdrop', airdrop);
@@ -32,7 +32,7 @@ export const RequestAirdrop = ({ account, disabled }) => {
       notify({
         type: 'success',
         message: 'KIN Airdrop successful!',
-        txid: airdrop.data.signature,
+        txid: airdrop.signature,
       });
     } catch (error: any) {
       notify({
@@ -45,9 +45,13 @@ export const RequestAirdrop = ({ account, disabled }) => {
     setSending(false);
 
     try {
-      const balance = await kinetic.getBalance({ account: account.publicKey });
-      const balanceInKin = (Number(balance.balance) / 100000).toString();
-      updateBalance(account, balanceInKin);
+      if (account.publicKey) {
+        const balance = await kinetic.getBalance({
+          account: account.publicKey,
+        });
+        const balanceInKin = (Number(balance.balance) / 100000).toString();
+        updateBalance(account, balanceInKin);
+      }
     } catch (error) {
       console.log('🚀 ~ error', error);
     }

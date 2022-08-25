@@ -1,6 +1,6 @@
 # Kinetic DApp Demo
 
-The Kinetic DApp Demo is a lightweight starter app based on the [Solana DApp Scaffold](https://github.com/solana-labs/dapp-scaffold) that will get you up and running with Kin as quickly as possible.
+The Kinetic DApp Demo is a lightweight starter app based on the [Solana DApp Scaffold](https://github.com/solana-labs/dapp-scaffold) that will get you up and running with Kin as quickly as possible using our new Kinetic API.
 
 ## Getting Started
 
@@ -29,9 +29,10 @@ yarn dev
 ## Features
 
 ```
-1) Easily connect to wallets such as Phantom, Solflare, etc
-2) Airdrop Solana and Kin to your connected wallet.
-3) Send Kin to an account and be credited for the KRE with your App Index.
+1) Create Kin Accounts
+2) Airdrop Kin
+3) Send Kin
+4) View Account Activity
 ```
 
 ## Learn More Next Js

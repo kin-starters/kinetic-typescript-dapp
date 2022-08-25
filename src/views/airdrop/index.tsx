@@ -23,6 +23,7 @@ export const AirdropView: FC = () => {
     width: '700px',
     display: 'flex',
     justifyContent: 'space-between',
+    marginBottom: '10px',
   };
   const inputStyle = {
     color: 'black',

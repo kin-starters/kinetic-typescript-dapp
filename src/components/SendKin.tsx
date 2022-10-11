@@ -117,6 +117,7 @@ export const SendKin: FC = () => {
       };
 
       const transaction = await kinetic.makeTransferBatch(batchOptions);
+      const explorerUrl = await kinetic.getExplorerUrl(transaction.signature);
 
       if (!transaction.signature) {
         notify({

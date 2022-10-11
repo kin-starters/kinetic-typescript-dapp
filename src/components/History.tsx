@@ -16,7 +16,9 @@ const AccountHistory = ({ account }: AccountHistoryProps) => {
   const getHistory = async () => {
     setLoading(true);
     setHistory(null);
-    const hstry = await kinetic.getHistory({ account: account.publicKey });
+    const hstry = await kinetic.getHistory({
+      account: account.publicKey,
+    });
     setHistory(hstry);
     setLoading(false);
   };
@@ -29,7 +31,7 @@ const AccountHistory = ({ account }: AccountHistoryProps) => {
 
   return (
     <div>
-      {history?.data.length || loading ? (
+      {history?.length || loading ? (
         <div
           style={{
             width: '700px',
@@ -40,7 +42,7 @@ const AccountHistory = ({ account }: AccountHistoryProps) => {
           {loading ? (
             <div style={{ width: '100%' }}>Loading...</div>
           ) : (
-            history.data.map((historyEvent) => {
+            history.map((historyEvent) => {
               return (
                 <div>
                   {historyEvent.history.map((hstry) => {

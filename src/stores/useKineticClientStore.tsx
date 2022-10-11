@@ -11,6 +11,7 @@ const useKineticClientStore = create<KineticClientStore>((set, _get) => ({
   setupKinetic: () => {
     const config: KineticSdkConfig = {
       environment: 'devnet',
+      endpoint: 'https://sandbox.kinetic.host/',
       index: 1,
     };
 

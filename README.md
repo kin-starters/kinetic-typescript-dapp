@@ -1,4 +1,4 @@
-# Kinetic DApp Demo
+# Kinetic Demo DApp
 
 The Kinetic DApp Demo is a lightweight starter app based on the [Solana DApp Scaffold](https://github.com/solana-labs/dapp-scaffold) that will get you up and running with Kin as quickly as possible using our new Kinetic API.
 

@@ -46,11 +46,10 @@ export const RequestAirdrop = ({ account, disabled, address }) => {
 
     try {
       if (account.publicKey) {
-        const balance = await kinetic.getBalance({
+        const { balance } = await kinetic.getBalance({
           account: account.publicKey,
         });
-        const balanceInKin = (Number(balance.balance) / 100000).toString();
-        updateBalance(account, balanceInKin);
+        updateBalance(account, balance);
       }
     } catch (error) {
       console.log('🚀 ~ error', error);

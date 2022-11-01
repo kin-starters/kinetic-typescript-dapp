@@ -3,8 +3,7 @@ import {
   MakeTransferBatchOptions,
   TransferDestination,
 } from '@kin-kinetic/sdk';
-import { TransactionType } from '@kin-tools/kin-memo';
-import { Commitment } from '@kin-kinetic/solana';
+import { Commitment, TransactionType } from '@kin-kinetic/solana';
 
 import useKineticClientStore from '../stores/useKineticClientStore';
 import useAccountsStore from '../stores/useAccountsStore';
@@ -52,11 +51,10 @@ export const SendKin: FC = () => {
     try {
       const promises = accs.map((acc) => {
         return async () => {
-          const balance = await kinetic.getBalance({ account: acc });
-          const balanceInKin = (Number(balance.balance) / 100000).toString();
+          const { balance } = await kinetic.getBalance({ account: acc });
           const account = accounts.find((ac) => ac.publicKey === acc);
           if (account) {
-            updateBalance(account, balanceInKin);
+            updateBalance(account, balance);
           }
         };
       });

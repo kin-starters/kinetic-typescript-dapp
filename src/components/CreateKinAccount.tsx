@@ -45,10 +45,10 @@ export const CreateKinAccount = ({
           throw new Error('Account already exists!');
         }
         try {
-          const rawBalance = await kinetic.getBalance({
+          const balanceResponse = await kinetic.getBalance({
             account: keypair.publicKey,
           });
-          balance = (Number(rawBalance.balance) / 100000).toString();
+          balance = balanceResponse.balance;
           setFromMnemonic('');
         } catch (error) {
           console.log('🚀 ~ error', error);

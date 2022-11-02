@@ -27,11 +27,13 @@ a {
 .Logo {
   width: 60px;
   height: 25px;
+  transform: scale(2);
 }
 .LogoFooter {
   width: 80px;
   height: 40px;
   margin-bottom: 10px;
+  transform: scale(1.5);
 }
 
 .fade-in {

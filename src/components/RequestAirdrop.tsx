@@ -1,4 +1,6 @@
 import { useCallback, useState } from 'react';
+import { Commitment } from '@kin-kinetic/solana';
+
 import { notify } from '../utils/notifications';
 
 import useKineticClientStore from '../stores/useKineticClientStore';
@@ -26,6 +28,7 @@ export const RequestAirdrop = ({ account, disabled, address }) => {
       const airdrop = await kinetic.requestAirdrop({
         account: account?.publicKey || address,
         amount: '1000',
+        commitment: Commitment.Finalized,
       });
       console.log('🚀 ~ airdrop', airdrop);
 

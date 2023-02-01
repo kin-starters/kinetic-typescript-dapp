@@ -1,5 +1,6 @@
 import create, { State } from 'zustand';
 import { KineticSdk, KineticSdkConfig } from '@kin-kinetic/sdk';
+import { Commitment } from '@kin-kinetic/solana';
 
 interface KineticClientStore extends State {
   kinetic: KineticSdk | null;
@@ -13,6 +14,7 @@ const useKineticClientStore = create<KineticClientStore>((set, _get) => ({
       environment: 'devnet',
       endpoint: 'https://sandbox.kinetic.host/',
       index: 1,
+      commitment: Commitment.Confirmed,
     };
 
     if (process.env.KINETIC_LOCAL_API) {

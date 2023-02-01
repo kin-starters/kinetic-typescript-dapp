@@ -51,7 +51,10 @@ export const SendKin: FC = () => {
     try {
       const promises = accs.map((acc) => {
         return async () => {
-          const { balance } = await kinetic.getBalance({ account: acc });
+          const { balance } = await kinetic.getBalance({
+            account: acc,
+            commitment: Commitment.Confirmed,
+          });
           const account = accounts.find((ac) => ac.publicKey === acc);
           if (account) {
             updateBalance(account, balance);

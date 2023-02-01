@@ -28,7 +28,7 @@ export const RequestAirdrop = ({ account, disabled, address }) => {
       const airdrop = await kinetic.requestAirdrop({
         account: account?.publicKey || address,
         amount: '1000',
-        commitment: Commitment.Finalized,
+        commitment: Commitment.Confirmed,
       });
       console.log('🚀 ~ airdrop', airdrop);
 
@@ -51,6 +51,7 @@ export const RequestAirdrop = ({ account, disabled, address }) => {
       if (account.publicKey) {
         const { balance } = await kinetic.getBalance({
           account: account.publicKey,
+          commitment: Commitment.Confirmed,
         });
         updateBalance(account, balance);
       }

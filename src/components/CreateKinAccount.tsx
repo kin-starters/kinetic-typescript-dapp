@@ -47,6 +47,7 @@ export const CreateKinAccount = ({
         try {
           const balanceResponse = await kinetic.getBalance({
             account: keypair.publicKey,
+            commitment: Commitment.Confirmed,
           });
           balance = balanceResponse.balance;
           setFromMnemonic('');
